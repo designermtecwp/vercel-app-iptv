@@ -1,14 +1,23 @@
-import { NextResponse } from "next/server";
-import { readFileSync, existsSync } from "fs";
-import { join } from "path";
+﻿import { NextResponse } from "next/server";
 
-const CONFIG_PATH = join(process.cwd(), "admin-config.json");
+const DEFAULT_CONFIG = {
+  appName: "IPTV WEB PLAYER",
+  appLogo: "https://upload.wikimedia.org/wikipedia/commons/6/6f/IPTV.png",
+  loginLogo: "https://upload.wikimedia.org/wikipedia/commons/6/6f/IPTV.png",
+  loginTitle: "Login",
+  loginSubtitle: "",
+  serverDns: "",
+  serverDnsList: [],
+  primaryColor: "#114bc0",
+  welcomeMessage: "Bem vindo",
+  notification: "",
+  allowedUsers: [],
+};
 
 export async function GET() {
-  if (!existsSync(CONFIG_PATH)) return NextResponse.json({});
   try {
-    return NextResponse.json(JSON.parse(readFileSync(CONFIG_PATH, "utf-8")));
-  } catch {
-    return NextResponse.json({});
-  }
+    const raw = process.env.ADMIN_CONFIG;
+    if (raw) return NextResponse.json({ ...DEFAULT_CONFIG, ...JSON.parse(raw) });
+  } catch {}
+  return NextResponse.json(DEFAULT_CONFIG);
 }
