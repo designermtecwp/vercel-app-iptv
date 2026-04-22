@@ -1,0 +1,71 @@
+@import "tailwindcss";
+
+body { background: #0a0a0a; color: #fff; }
+::-webkit-scrollbar { width: 4px; height: 4px; }
+::-webkit-scrollbar-thumb { background: #333; border-radius: 2px; }
+.hide-scrollbar::-webkit-scrollbar { display: none; }
+.hide-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+
+/* Mobile optimizations */
+@media (max-width: 768px) {
+  h1 { font-size: 1.1rem !important; }
+  h2 { font-size: 0.95rem !important; }
+  .text-xl { font-size: 1rem !important; }
+  .text-2xl { font-size: 1.2rem !important; }
+  .text-3xl { font-size: 1.4rem !important; }
+  .text-4xl { font-size: 1.6rem !important; }
+}
+
+/* Prevent text selection on tap */
+* { -webkit-tap-highlight-color: transparent; }
+
+/* Smooth scrolling */
+html { scroll-behavior: smooth; }
+
+/* TV D-pad focus styles */
+:focus-visible {
+  outline: 3px solid #7c3aed !important;
+  outline-offset: 2px !important;
+  border-radius: 8px;
+}
+a:focus-visible, button:focus-visible {
+  box-shadow: 0 0 0 3px #7c3aed66;
+}
+/* Hide scrollbar */
+.hide-scrollbar::-webkit-scrollbar { display: none; }
+.hide-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+/* TV safe area */
+@media (min-width: 1280px) and (hover: none) {
+  body { padding: env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left); }
+}
+
+/* Esconder scrollbar mantendo funcionalidade */
+.no-scrollbar { scrollbar-width: none; -ms-overflow-style: none; }
+.no-scrollbar::-webkit-scrollbar { display: none; }
+
+
+
+/* Bordas padrão 5px em todos os cards */
+.rounded-xl { border-radius: 5px !important; }
+.rounded-2xl { border-radius: 5px !important; }
+.rounded-lg { border-radius: 5px !important; }
+
+/* TV focus - barra mais fina */
+:focus-visible {
+  border-radius: 5px;
+  outline-offset: 1px !important;
+  outline: 1px solid #7c3aed !important;
+}
+a:focus-visible, button:focus-visible {
+  box-shadow: 0 0 0 1px #7c3aed66 !important;
+}
+
+/* TV focus - barra mais fina */
+:focus-visible {
+  border-radius: 5px;
+  outline-offset: 1px !important;
+  outline: 1px solid #7c3aed !important;
+}
+a:focus-visible, button:focus-visible {
+  box-shadow: 0 0 0 1px #7c3aed66 !important;
+}
