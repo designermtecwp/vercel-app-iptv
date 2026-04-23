@@ -1,6 +1,6 @@
-"use client";
+﻿"use client";
 import { fetchXtream } from "@/lib/fetch-proxy";
-import React, { useEffect, useState, useRef } from "react";
+import React, { useEffect, useState, useRef, useCallback } from "react";
 import Link from "next/link";
 
 interface Channel { stream_id:number; name:string; stream_icon:string; category_id:string; }
@@ -13,7 +13,8 @@ function getHistory(): HistoryItem[] {
 }
 
 function NotificationPopup({ message }: { message: string }) {
-  const key = `notif_${btoa(encodeURIComponent(message)).slice(0,30)}`;
+  const key = +""+
+otif_+""++btoa(encodeURIComponent(message)).slice(0,30);
   const [visible, setVisible] = React.useState(() => {
     try { return localStorage.getItem(key) !== "closed"; } catch { return true; }
   });
@@ -24,7 +25,6 @@ function NotificationPopup({ message }: { message: string }) {
   }
   return (
     <div style={{position:"fixed",top:"12px",right:"12px",zIndex:9998,width:"280px",animation:"slideIn 0.3s ease"}}>
-      <style>{`@keyframes slideIn{from{transform:translateX(20px);opacity:0}to{transform:translateX(0);opacity:1}}`}</style>
       <div style={{background:"rgba(15,15,20,0.97)",border:"1px solid rgba(124,58,237,0.4)",borderRadius:"8px",padding:"10px 12px",display:"flex",alignItems:"flex-start",gap:"8px",boxShadow:"0 4px 20px rgba(0,0,0,0.5)"}}>
         <svg viewBox="0 0 24 24" style={{width:"14px",height:"14px",flexShrink:0,marginTop:"2px",color:"#a685ff"}} fill="none" stroke="currentColor" strokeWidth={2}><path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9M13.73 21a2 2 0 01-3.46 0"/></svg>
         <p style={{flex:1,fontSize:"12px",lineHeight:"1.5",color:"#ffffff",margin:0,wordBreak:"break-word",overflowWrap:"anywhere"}}>{message}</p>
@@ -36,12 +36,336 @@ function NotificationPopup({ message }: { message: string }) {
   );
 }
 
-
 function proxyUrl(url: string): string {
   if (!url) return url;
-  if (url.startsWith("http://")) return `/api/img?url=${encodeURIComponent(url)}`;
+  if (url.startsWith("http://")) return +""+/api/img?url=+""++encodeURIComponent(url);
   return url;
 }
+
+/* ========== Scroll Row Wrapper com setas ========== */
+function ScrollRow({ children, label, linkHref, linkText, count }: {
+  children: React.ReactNode;
+  label: string;
+  linkHref?: string;
+  linkText?: string;
+  count?: number;
+}) {
+  const ref = useRef<HTMLDivElement>(null);
+  const [canLeft, setCanLeft] = useState(false);
+  const [canRight, setCanRight] = useState(false);
+  const [hovering, setHovering] = useState(false);
+
+  const check = useCallback(() => {
+    const el = ref.current;
+    if (!el) return;
+    setCanLeft(el.scrollLeft > 10);
+    setCanRight(el.scrollLeft < el.scrollWidth - el.clientWidth - 10);
+  }, []);
+
+  useEffect(() => {
+    const el = ref.current;
+    if (!el) return;
+    check();
+    el.addEventListener("scroll", check, { passive: true });
+    window.addEventListener("resize", check);
+    return () => { el.removeEventListener("scroll", check); window.removeEventListener("resize", check); };
+  }, [check, children]);
+
+  const scroll = (dir: "left"|"right") => {
+    const el = ref.current;
+    if (!el) return;
+    el.scrollBy({ left: dir === "left" ? -el.clientWidth * 0.75 : el.clientWidth * 0.75, behavior: "smooth" });
+  };
+
+  return (
+    <section
+      className="relative"
+      onMouseEnter={() => setHovering(true)}
+      onMouseLeave={() => setHovering(false)}
+    >
+      {/* Header */}
+      <div className="flex items-center justify-between mb-2.5 px-5 sm:px-6">
+        <div className="flex items-center gap-2">
+          <h2 className="text-sm font-semibold text-white/90 tracking-tight">{label}</h2>
+          {count !== undefined && count > 0 && (
+            <span style={{fontSize:"10px",padding:"1px 7px",borderRadius:"20px",background:"rgba(255,255,255,0.04)",color:"#4a4a5a",fontWeight:500}}>{count}</span>
+          )}
+        </div>
+        {linkHref && (
+          <Link href={linkHref} className="text-xs font-medium transition-colors" style={{color:"#4a4a5a"}}
+            onMouseEnter={e=>{e.currentTarget.style.color="#f0f0f5"}}
+            onMouseLeave={e=>{e.currentTarget.style.color="#4a4a5a"}}>
+            {linkText || "Ver tudo"} <span style={{marginLeft:"2px"}}>›</span>
+          </Link>
+        )}
+      </div>
+
+      {/* Scroll container */}
+      <div className="relative">
+        <div ref={ref} className="flex gap-[var(--row-gap)] overflow-x-auto home-row-scroll px-5 sm:px-6 pb-2" style={{scrollbarWidth:"none",msOverflowStyle:"none"}}>
+          {children}
+        </div>
+
+        {/* Fade esquerda */}
+        <div className="hidden md:block absolute left-0 top-0 bottom-0 w-10 pointer-events-none z-10 transition-opacity duration-300"
+          style={{background:"linear-gradient(to right, var(--app-bg, #09090b), transparent)", opacity: canLeft ? 1 : 0}} />
+
+        {/* Fade direita */}
+        <div className="hidden md:block absolute right-0 top-0 bottom-0 w-10 pointer-events-none z-10 transition-opacity duration-300"
+          style={{background:"linear-gradient(to left, var(--app-bg, #09090b), transparent)", opacity: canRight ? 1 : 0}} />
+
+        {/* Seta esquerda */}
+        {canLeft && (
+          <button onClick={() => scroll("left")}
+            className="hidden md:flex absolute left-1.5 top-1/2 -translate-y-1/2 z-20 items-center justify-center transition-all"
+            style={{width:32,height:32,borderRadius:"50%",background:"rgba(9,9,11,0.85)",border:"1px solid rgba(255,255,255,0.06)",color:"#f0f0f5",backdropFilter:"blur(12px)",
+              opacity:hovering?1:0,cursor:"pointer",boxShadow:"0 4px 16px rgba(0,0,0,0.5)"}}>
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
+          </button>
+        )}
+
+        {/* Seta direita */}
+        {canRight && (
+          <button onClick={() => scroll("right")}
+            className="hidden md:flex absolute right-1.5 top-1/2 -translate-y-1/2 z-20 items-center justify-center transition-all"
+            style={{width:32,height:32,borderRadius:"50%",background:"rgba(9,9,11,0.85)",border:"1px solid rgba(255,255,255,0.06)",color:"#f0f0f5",backdropFilter:"blur(12px)",
+              opacity:hovering?1:0,cursor:"pointer",boxShadow:"0 4px 16px rgba(0,0,0,0.5)"}}>
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
+          </button>
+        )}
+      </div>
+    </section>
+  );
+}
+
+/* ========== Card Poster (Filmes/Series) ========== */
+function PosterCard({ title, image, onClick, index }: { title:string; image:string; onClick:()=>void; index:number }) {
+  const [loaded, setLoaded] = useState(false);
+  const [error, setError] = useState(false);
+  const accent = ["#7c3aed","#3b82f6","#f59e0b","#ef4444","#10b981","#6366f1","#ec4899","#f97316"][index % 8];
+  return (
+    <div onClick={onClick} className="cursor-pointer home-card-item flex-shrink-0" style={{width:"clamp(100px, calc(12.5% - 12.25px), 155px)"}}>
+      <div className="card-img relative overflow-hidden mb-1.5"
+        style={{aspectRatio:"2/3",borderRadius:"var(--card-radius,6px)",background:image?"#111113":accent+"18",
+          border:"1px solid rgba(255,255,255,0.03)"}}>
+        {image && !error ? (
+          <img src={proxyUrl(image)} alt={title}
+            className="w-full h-full object-cover"
+            style={{opacity:loaded?1:0,transition:"opacity 0.3s ease"}}
+            onLoad={()=>setLoaded(true)}
+            onError={()=>setError(true)} />
+        ) : null}
+        {!loaded && !error && image && <div className="absolute inset-0 skeleton-shimmer"/>}
+        {(error || !image) && (
+          <div className="absolute inset-0 flex items-center justify-center">
+            <svg viewBox="0 0 24 24" className="w-7 h-7" fill={accent} opacity={0.5}><path d="M8 5v14l11-7z"/></svg>
+          </div>
+        )}
+        {/* Hover overlay */}
+        <div className="card-overlay absolute inset-0 flex items-center justify-center"
+          style={{background:"linear-gradient(to top, rgba(0,0,0,0.7) 0%, rgba(0,0,0,0.1) 60%)"}}>
+          <div style={{width:36,height:36,borderRadius:"50%",background:"rgba(255,255,255,0.12)",backdropFilter:"blur(8px)",border:"1px solid rgba(255,255,255,0.15)",
+            display:"flex",alignItems:"center",justifyContent:"center"}}>
+            <svg viewBox="0 0 24 24" width="15" height="15" fill="white"><polygon points="8,5 20,12 8,19"/></svg>
+          </div>
+        </div>
+      </div>
+      <p className="card-title text-xs truncate" style={{color:"#8b8b9a",fontWeight:500,paddingLeft:1}}>{title}</p>
+    </div>
+  );
+}
+
+/* ========== Card Canal Live ========== */
+function LiveCard({ ch, onClick }: { ch:Channel; onClick:()=>void }) {
+  const [loaded, setLoaded] = useState(false);
+  return (
+    <div onClick={onClick} className="cursor-pointer home-card-item flex-shrink-0" style={{width:"clamp(100px, calc(12.5% - 12.25px), 155px)"}}>
+      <div className="card-img relative overflow-hidden mb-1.5 flex items-center justify-center"
+        style={{height:90,borderRadius:"var(--card-radius,6px)",background:"#111113",
+          border:"1px solid rgba(255,255,255,0.03)"}}>
+        {ch.stream_icon ? (
+          <img src={ch.stream_icon} alt={ch.name}
+            className="w-16 h-12 object-contain"
+            style={{opacity:loaded?1:0,transition:"opacity 0.3s ease"}}
+            onLoad={()=>setLoaded(true)}
+            onError={e=>{(e.target as HTMLImageElement).style.display="none"}} />
+        ) : (
+          <span className="text-base font-bold" style={{color:"rgba(255,255,255,0.12)"}}>{ch.name.slice(0,3).toUpperCase()}</span>
+        )}
+        {/* Live badge */}
+        <div className="absolute top-1.5 left-1.5 flex items-center gap-1 px-1.5 py-0.5 rounded"
+          style={{background:"rgba(239,68,68,0.80)",fontSize:"8px",fontWeight:700,color:"white",letterSpacing:"0.05em",textTransform:"uppercase"}}>
+          <div style={{width:4,height:4,borderRadius:"50%",background:"white"}}/>
+          LIVE
+        </div>
+        {/* Hover overlay */}
+        <div className="card-overlay absolute inset-0 flex items-center justify-center"
+          style={{background:"rgba(0,0,0,0.5)"}}>
+          <div style={{width:32,height:32,borderRadius:"50%",background:"rgba(255,255,255,0.12)",backdropFilter:"blur(8px)",border:"1px solid rgba(255,255,255,0.15)",
+            display:"flex",alignItems:"center",justifyContent:"center"}}>
+            <svg viewBox="0 0 24 24" width="13" height="13" fill="white"><polygon points="8,5 20,12 8,19"/></svg>
+          </div>
+        </div>
+      </div>
+      <p className="card-title text-xs truncate" style={{color:"#8b8b9a",fontWeight:500,paddingLeft:1}}>{ch.name}</p>
+    </div>
+  );
+}
+
+/* ========== Card Historico ========== */
+function HistoryCard({ item, onClick, index }: { item:HistoryItem; onClick:()=>void; index:number }) {
+  const accent = ["#7c3aed","#3b82f6","#f59e0b","#ef4444","#10b981","#6366f1","#ec4899","#f97316"][index % 8];
+  const typeLabel = item.type==="live"?"Canal":item.type==="vod"?"Filme":"Serie";
+  return (
+    <div onClick={onClick} className="cursor-pointer home-card-item flex-shrink-0" style={{width:"clamp(100px, calc(12.5% - 12.25px), 155px)"}}>
+      <div className="card-img relative overflow-hidden mb-1.5 flex items-center justify-center"
+        style={{height:80,borderRadius:"var(--card-radius,6px)",background:accent+"12",
+          border:"1px solid rgba(255,255,255,0.03)"}}>
+        <svg viewBox="0 0 24 24" className="w-6 h-6" fill={accent} opacity={0.7}><path d="M8 5v14l11-7z"/></svg>
+        {/* Progress bar */}
+        {item.progress && item.duration && item.duration > 0 && (
+          <div className="absolute bottom-0 left-0 right-0 h-0.5" style={{background:"rgba(255,255,255,0.06)"}}>
+            <div style={{height:"100%",width:+""+${Math.min((item.progress/item.duration)*100,100)}%+""+,background:accent,borderRadius:2}}/>
+          </div>
+        )}
+        <div className="card-overlay absolute inset-0 flex items-center justify-center" style={{background:"rgba(0,0,0,0.45)"}}>
+          <div style={{width:30,height:30,borderRadius:"50%",background:"rgba(255,255,255,0.15)",display:"flex",alignItems:"center",justifyContent:"center"}}>
+            <svg viewBox="0 0 24 24" width="12" height="12" fill="white"><polygon points="8,5 20,12 8,19"/></svg>
+          </div>
+        </div>
+      </div>
+      <p className="card-title text-xs truncate" style={{color:"#8b8b9a",fontWeight:500,paddingLeft:1}}>{item.name}</p>
+      <p className="text-[10px] truncate" style={{color:"#4a4a5a",paddingLeft:1}}>{typeLabel}</p>
+    </div>
+  );
+}
+
+
+/* ========== HERO SLIDER ========== */
+function HeroSlider({ items, creds }: { items:(VodItem|SeriesItem)[]; creds:{dns:string;user:string;pass:string}|null }) {
+  const [index, setIndex] = useState(0);
+  const [transitioning, setTransitioning] = useState(false);
+  const [imgLoaded, setImgLoaded] = useState(false);
+
+  useEffect(() => {
+    if (items.length === 0) return;
+    const interval = setInterval(() => {
+      setTransitioning(true);
+      setTimeout(() => {
+        setIndex(i => (i+1) % items.length);
+        setImgLoaded(false);
+        setTransitioning(false);
+      }, 350);
+    }, 7000);
+    return () => clearInterval(interval);
+  }, [items.length]);
+
+  const goTo = (i: number) => {
+    if (i === index || transitioning) return;
+    setTransitioning(true);
+    setTimeout(() => { setIndex(i); setImgLoaded(false); setTransitioning(false); }, 350);
+  };
+
+  const current = items[index];
+  if (!current) {
+    return (
+      <div className="relative overflow-hidden" style={{height:"clamp(220px, 42vh, 420px)",background:"linear-gradient(135deg,#0d0522 0%,#0a1628 50%,#09090b 100%)"}}>
+        <div className="absolute inset-0 flex items-end pb-10 px-5 sm:px-6">
+          <div>
+            <h1 className="text-xl font-semibold text-white mb-1">Bem-vindo</h1>
+            <p className="text-sm" style={{color:"#4a4a5a"}}>Seu conteudo aparecera aqui</p>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  const isVod = "stream_id" in current;
+  const imgSrc = isVod ? (current as VodItem).stream_icon : (current as SeriesItem).cover;
+  const title = current.name;
+
+  function handlePlay() {
+    if (!creds) return;
+    if (isVod) {
+      const v = current as VodItem;
+      window.location.href = +""+/movie/?dns=&username=&password=&name=&category_id=+""+;
+    } else {
+      const s = current as SeriesItem;
+      window.location.href = +""+/series/?dns=&username=&password=&name=+""+;
+    }
+  }
+
+  return (
+    <div className="relative overflow-hidden" style={{height:"clamp(220px, 42vh, 420px)"}}>
+      {/* BG Image */}
+      <div className="absolute inset-0 transition-opacity duration-500" style={{opacity: transitioning ? 0 : 1}}>
+        {imgSrc && (
+          <img src={imgSrc} alt="" className="w-full h-full object-cover"
+            style={{opacity:imgLoaded?1:0,transition:"opacity 0.5s ease",transform:"scale(1.03)",filter:"blur(1px)"}}
+            onLoad={()=>setImgLoaded(true)}
+            onError={e=>{(e.target as HTMLImageElement).style.display="none"}} />
+        )}
+        <div className="absolute inset-0" style={{background:"linear-gradient(to right, rgba(9,9,11,0.96) 0%, rgba(9,9,11,0.65) 45%, rgba(9,9,11,0.25) 100%)"}}/>
+        <div className="absolute inset-0" style={{background:"linear-gradient(to top, rgba(9,9,11,1) 0%, rgba(9,9,11,0.5) 35%, transparent 70%)"}}/>
+      </div>
+
+      {/* Content */}
+      <div className="absolute inset-0 flex items-end pb-8 sm:pb-10 px-5 sm:px-6">
+        <div className="flex items-end gap-4 max-w-2xl w-full transition-all duration-400"
+          style={{opacity:transitioning?0:1,transform:transitioning?"translateY(10px)":"translateY(0)"}}>
+          {/* Mini poster - desktop only */}
+          {imgSrc && (
+            <div className="hidden md:block flex-shrink-0 overflow-hidden" style={{width:80,aspectRatio:"2/3",borderRadius:6,border:"1px solid rgba(255,255,255,0.06)",boxShadow:"0 8px 30px rgba(0,0,0,0.5)"}}>
+              <img src={imgSrc} alt="" className="w-full h-full object-cover" onError={e=>{(e.target as HTMLImageElement).style.display="none"}}/>
+            </div>
+          )}
+          <div className="flex-1 min-w-0">
+            <p className="text-[10px] font-semibold uppercase tracking-widest mb-1.5" style={{color:"#7c3aed"}}>
+              {isVod ? "Filme em destaque" : "Serie em destaque"}
+            </p>
+            <h2 className="text-lg sm:text-xl md:text-2xl font-bold text-white mb-3 truncate" style={{letterSpacing:"-0.01em",lineHeight:1.2}}>
+              {title}
+            </h2>
+            <div className="flex items-center gap-2.5">
+              <button onClick={handlePlay}
+                className="flex items-center gap-2 font-semibold text-xs transition-all"
+                style={{background:"white",color:"black",padding:"8px 20px",borderRadius:6}}
+                onMouseEnter={e=>{e.currentTarget.style.background="#e4e4e7"}}
+                onMouseLeave={e=>{e.currentTarget.style.background="white"}}>
+                <svg viewBox="0 0 24 24" width="13" height="13" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>
+                Assistir
+              </button>
+              <button onClick={handlePlay}
+                className="flex items-center gap-1.5 font-medium text-xs transition-all"
+                style={{background:"rgba(255,255,255,0.07)",color:"#e4e4e7",padding:"8px 16px",borderRadius:6,border:"1px solid rgba(255,255,255,0.06)"}}
+                onMouseEnter={e=>{e.currentTarget.style.background="rgba(255,255,255,0.12)"}}
+                onMouseLeave={e=>{e.currentTarget.style.background="rgba(255,255,255,0.07)"}}>
+                <svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>
+                Detalhes
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Dots */}
+      {items.length > 1 && (
+        <div className="absolute bottom-3 right-5 flex items-center gap-1">
+          {items.map((_,i) => (
+            <button key={i} onClick={()=>goTo(i)} className="transition-all duration-300"
+              style={{width:i===index?18:5,height:5,borderRadius:10,border:"none",cursor:"pointer",
+                background:i===index?"#7c3aed":"rgba(255,255,255,0.15)"}}/>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
+
+/* ================================================== */
+/* =================== HOME PAGE ==================== */
+/* ================================================== */
 export default function HomePage() {
   const [creds, setCreds] = useState<{dns:string;user:string;pass:string}|null>(null);
   const [adminConfig, setAdminConfig] = useState<{notification?:string;appName?:string;primaryColor?:string}>({});
@@ -50,32 +374,26 @@ export default function HomePage() {
   const [series, setSeries] = useState<SeriesItem[]>([]);
   const [history, setHistory] = useState<HistoryItem[]>([]);
   const [loading, setLoading] = useState(true);
-  const [serverStatus, setServerStatus] = useState<"online"|"offline"|"checking">("checking");
-  const [sliderIndex, setSliderIndex] = useState(0);
   const [sliderItems, setSliderItems] = useState<(VodItem|SeriesItem)[]>([]);
 
   useEffect(() => {
-    // Buscar config do painel admin e atualizar periodicamente
     const fetchAdmin = () => fetch("/api/admin/public").then(r=>r.json()).then(cfg=>{
       setAdminConfig(cfg);
-      // Aplicar cor primária em todas as classes violet/purple do Tailwind via CSS vars
       if (cfg.primaryColor) {
         const root = document.documentElement;
         root.style.setProperty("--primary", cfg.primaryColor);
-        // Injetar estilo global para sobrescrever cor violet
         const styleId = "admin-theme";
         let style = document.getElementById(styleId) as HTMLStyleElement;
         if (!style) { style = document.createElement("style"); style.id = styleId; document.head.appendChild(style); }
-        style.textContent = `
-          .bg-violet-600, .hover\:bg-violet-600:hover { background-color: ${cfg.primaryColor} !important; }
-          .bg-violet-500, .hover\:bg-violet-500:hover { background-color: ${cfg.primaryColor}dd !important; }
-          .text-violet-400, .text-violet-300 { color: ${cfg.primaryColor} !important; }
-          .border-violet-500, .border-violet-600 { border-color: ${cfg.primaryColor} !important; }
-          .bg-violet-600\/20 { background-color: ${cfg.primaryColor}33 !important; }
-          .ring-violet-400 { --tw-ring-color: ${cfg.primaryColor} !important; }
-        `;
+        style.textContent = +""+
+          .bg-violet-600, .hover\\:bg-violet-600:hover { background-color:  !important; }
+          .bg-violet-500, .hover\\:bg-violet-500:hover { background-color: dd !important; }
+          .text-violet-400, .text-violet-300 { color:  !important; }
+          .border-violet-500, .border-violet-600 { border-color:  !important; }
+          .bg-violet-600\\/20 { background-color: 33 !important; }
+          .ring-violet-400 { --tw-ring-color:  !important; }
+        +""+;
       }
-      // Aplicar nome do app no título
       if (cfg.appName) document.title = cfg.appName;
     }).catch(()=>{});
     fetchAdmin();
@@ -87,17 +405,14 @@ export default function HomePage() {
     setHistory(getHistory().slice(0, 8));
     if (dns && user && pass) {
       setCreds({dns, user, pass});
-      // Fase 1: canais + categorias (leve e rápido)
       Promise.all([
-        fetchXtream(`${dns}/player_api.php?username=${user}&password=${pass}&action=get_live_streams`).catch(()=>[]),
-        fetchXtream(`${dns}/player_api.php?username=${user}&password=${pass}&action=get_vod_categories`).catch(()=>[]),
-        fetchXtream(`${dns}/player_api.php?username=${user}&password=${pass}&action=get_series_categories`).catch(()=>[]),
+        fetchXtream(+""+${dns}/player_api.php?username=&password=&action=get_live_streams+""+).catch(()=>[]),
+        fetchXtream(+""+${dns}/player_api.php?username=&password=&action=get_vod_categories+""+).catch(()=>[]),
+        fetchXtream(+""+${dns}/player_api.php?username=&password=&action=get_series_categories+""+).catch(()=>[]),
       ]).then(async ([chs, vodCats, srsCats]) => {
-        setChannels(Array.isArray(chs) ? chs.slice(0, 8) : []);
-        setServerStatus("online");
+        setChannels(Array.isArray(chs) ? chs.slice(0, 20) : []);
         setLoading(false);
 
-        // Fase 2: buscar filmes e séries de UMA categoria só (muito mais rápido)
         const vodCatList = Array.isArray(vodCats) ? vodCats : [];
         const srsCatList = Array.isArray(srsCats) ? srsCats : [];
         const firstVodCat = vodCatList[vodCatList.length - 1]?.category_id;
@@ -105,274 +420,114 @@ export default function HomePage() {
 
         const [vods, srs] = await Promise.all([
           firstVodCat
-            ? fetchXtream(`${dns}/player_api.php?username=${user}&password=${pass}&action=get_vod_streams&category_id=${firstVodCat}`).catch(()=>[])
+            ? fetchXtream(+""+${dns}/player_api.php?username=&password=&action=get_vod_streams&category_id=+""+).catch(()=>[])
             : Promise.resolve([]),
           firstSrsCat
-            ? fetchXtream(`${dns}/player_api.php?username=${user}&password=${pass}&action=get_series&category_id=${firstSrsCat}`).catch(()=>[])
+            ? fetchXtream(+""+${dns}/player_api.php?username=&password=&action=get_series&category_id=+""+).catch(()=>[])
             : Promise.resolve([]),
         ]);
 
         const vodList = Array.isArray(vods) ? vods : [];
         const srsList = Array.isArray(srs) ? srs : [];
-        setMovies(vodList.slice(0, 10));
-        setSeries(srsList.slice(0, 10));
+        setMovies(vodList.slice(0, 20));
+        setSeries(srsList.slice(0, 20));
 
         const vodWithCover = vodList.filter((v:VodItem)=>v.stream_icon).slice(0,5);
         const srsWithCover = srsList.filter((s:SeriesItem)=>s.cover).slice(0,5);
-        const mixed = [...vodWithCover, ...srsWithCover].sort(()=>Math.random()-0.5).slice(0,8);
-        setSliderItems(mixed);
-      }).catch(() => { setServerStatus("offline"); setLoading(false); });
+        setSliderItems([...vodWithCover, ...srsWithCover].sort(()=>Math.random()-0.5).slice(0,8));
+      }).catch(() => { setLoading(false); });
     } else {
-      setServerStatus("offline");
       setLoading(false);
     }
-  }, []);
-
-  const accentColors = ["#7c3aed","#3b82f6","#f59e0b","#ef4444","#10b981","#6366f1","#ec4899","#f97316"];
-  const historyRef = useRef<HTMLDivElement>(null);
-  const channelsRef = useRef<HTMLDivElement>(null);
-  const moviesRef = useRef<HTMLDivElement>(null);
-  const seriesRef = useRef<HTMLDivElement>(null);
-
-  useEffect(() => {
-    [historyRef, channelsRef, moviesRef, seriesRef].forEach(ref => {
-      const el = ref.current;
-      if (!el) return;
-      let isDown = false, startX = 0, scrollLeft = 0;
-      const onDown = (e: MouseEvent) => { isDown=true; el.style.cursor="grabbing"; startX=e.pageX-el.offsetLeft; scrollLeft=el.scrollLeft; };
-      const onUp = () => { isDown=false; el.style.cursor="grab"; };
-      const onMove = (e: MouseEvent) => { if(!isDown) return; e.preventDefault(); const x=e.pageX-el.offsetLeft; el.scrollLeft=scrollLeft-(x-startX)*1.5; };
-      el.style.cursor="grab";
-      el.addEventListener("mousedown",onDown);
-      el.addEventListener("mouseleave",onUp);
-      el.addEventListener("mouseup",onUp);
-      el.addEventListener("mousemove",onMove);
-    });
+    return () => clearInterval(adminInterval);
   }, []);
 
   function openChannel(ch: Channel) {
     if (!creds) return;
-    window.location.href = `/player?stream=${ch.stream_id}&dns=${encodeURIComponent(creds.dns)}&username=${creds.user}&password=${creds.pass}&name=${encodeURIComponent(ch.name)}&type=live&icon=${encodeURIComponent(ch.stream_icon||"")}`;
+    window.location.href = +""+/player?stream=&dns=&username=&password=&name=&type=live&icon=+""+;
   }
   function openMovie(m: VodItem) {
     if (!creds) return;
-    window.location.href = `/movie/${m.stream_id}?dns=${encodeURIComponent(creds.dns)}&username=${creds.user}&password=${creds.pass}&name=${encodeURIComponent(m.name)}&category_id=${m.category_id}&icon=${encodeURIComponent(m.stream_icon||"")}`;
+    window.location.href = +""+/movie/?dns=&username=&password=&name=&category_id=&icon=+""+;
   }
   function openSeries(s: SeriesItem) {
     if (!creds) return;
-    window.location.href = `/series/${s.series_id}?dns=${encodeURIComponent(creds.dns)}&username=${creds.user}&password=${creds.pass}&name=${encodeURIComponent(s.name)}&icon=${encodeURIComponent(s.cover||"")}`;
+    window.location.href = +""+/series/?dns=&username=&password=&name=&icon=+""+;
   }
   function openHistory(item: HistoryItem) {
     if (!creds) return;
-    if (item.type === "vod") window.location.href = `/movie/${item.stream_id}?dns=${encodeURIComponent(creds.dns)}&username=${creds.user}&password=${creds.pass}&name=${encodeURIComponent(item.name)}&icon=${encodeURIComponent(item.icon||"")}`;
-    else if (item.type === "series") window.location.href = `/player?stream=${item.stream_id}&dns=${encodeURIComponent(creds.dns)}&username=${creds.user}&password=${creds.pass}&name=${encodeURIComponent(item.name)}&type=series&icon=${encodeURIComponent(item.icon||"")}`;
-    else window.location.href = `/player?stream=${item.stream_id}&dns=${encodeURIComponent(creds.dns)}&username=${creds.user}&password=${creds.pass}&name=${encodeURIComponent(item.name)}&type=live&icon=${encodeURIComponent(item.icon||"")}`;
+    if (item.type === "vod") window.location.href = +""+/movie/?dns=&username=&password=&name=&icon=+""+;
+    else if (item.type === "series") window.location.href = +""+/player?stream=&dns=&username=&password=&name=&type=series&icon=+""+;
+    else window.location.href = +""+/player?stream=&dns=&username=&password=&name=&type=live&icon=+""+;
   }
 
-  useEffect(() => {
-    if (sliderItems.length === 0) return;
-    const interval = setInterval(() => setSliderIndex(i => (i+1) % sliderItems.length), 5000);
-    return () => clearInterval(interval);
-  }, [sliderItems.length]);
-
-  const currentSlide = sliderItems[sliderIndex];
-  const isVod = currentSlide && "stream_id" in currentSlide;
+  /* === Loading State === */
+  if (loading) {
+    return (
+      <div className="min-h-full" style={{background:"var(--app-bg,#09090b)"}}>
+        {/* Hero skeleton */}
+        <div className="skeleton-shimmer" style={{height:"clamp(220px, 42vh, 420px)"}}/>
+        {/* Row skeletons */}
+        <div className="px-5 sm:px-6 mt-6 space-y-8">
+          {[1,2,3].map(n => (
+            <div key={n}>
+              <div className="skeleton-shimmer rounded mb-3" style={{width:140,height:14}}/>
+              <div className="flex gap-[var(--row-gap)]">
+                {[...Array(8)].map((_,i) => (
+                  <div key={i} className="flex-shrink-0 skeleton-shimmer" style={{width:"clamp(100px, calc(12.5% - 12.25px), 155px)",aspectRatio:"2/3",borderRadius:"var(--card-radius,6px)"}}/>
+                ))}
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+    );
+  }
 
   return (
-    <div className="min-h-full pb-6">
-      {/* Notificação admin — popup topo direito */}
-      {adminConfig.notification && (
-        <NotificationPopup message={adminConfig.notification} />
-      )}
-      {/* Hero Slider */}
-      <div className="relative h-64 sm:h-80 md:h-96 overflow-hidden">
-        {currentSlide ? (
-          <div className="absolute inset-0 transition-all duration-700">
-            <img src={"stream_icon" in currentSlide ? currentSlide.stream_icon : currentSlide.cover} alt=""
-              className="w-full h-full object-cover scale-105" style={{filter:"blur(2px)"}}
-              onError={e=>{(e.target as HTMLImageElement).style.display="none"}}/>
-            <div className="absolute inset-0" style={{background:"linear-gradient(to right, rgba(0,0,0,0.95) 0%, rgba(0,0,0,0.6) 50%, rgba(0,0,0,0.2) 100%)"}}/>
-            <div className="absolute inset-0" style={{background:"linear-gradient(to top, rgba(0,0,0,0.9) 0%, transparent 60%)"}}/>
-          </div>
-        ) : (
-          <div className="absolute inset-0" style={{background:"linear-gradient(135deg,#0d0522 0%,#0a1628 50%,#0d0522 100%)"}}/>
-        )}
-        <div className="absolute inset-0 flex items-end pb-8 px-4 sm:px-8">
-          <div className="flex items-end gap-4 w-full max-w-2xl">
-            {currentSlide && (
-              <div className="hidden sm:block flex-shrink-0 w-24 rounded-xl overflow-hidden border border-white/10 shadow-2xl" style={{aspectRatio:"2/3"}}>
-                <img src={"stream_icon" in currentSlide ? currentSlide.stream_icon : currentSlide.cover} alt=""
-                  className="w-full h-full object-cover" onError={e=>{(e.target as HTMLImageElement).style.display="none"}}/>
-              </div>
-            )}
-            <div className="flex-1 min-w-0">
+    <div className="min-h-full pb-6" style={{background:"var(--app-bg,#09090b)"}}>
+      {/* Notificacao admin */}
+      {adminConfig.notification && <NotificationPopup message={adminConfig.notification} />}
 
-              {currentSlide ? (
-                <>
-                  <p className="text-xs text-white/50 font-medium mb-1 uppercase tracking-wider">{isVod?"Filme em destaque":"Série em destaque"}</p>
-                  <h2 className="text-xl sm:text-2xl font-bold text-white mb-3 truncate">{"name" in currentSlide ? currentSlide.name : ""}</h2>
-                  <button onClick={()=>{
-                    if(!creds) return;
-                    if(isVod){const v=currentSlide as VodItem;window.location.href=`/movie/${v.stream_id}?dns=${encodeURIComponent(creds.dns)}&username=${creds.user}&password=${creds.pass}&name=${encodeURIComponent(v.name)}&category_id=${v.category_id}`;}
-                    else{const s=currentSlide as SeriesItem;window.location.href=`/series/${s.series_id}?dns=${encodeURIComponent(creds.dns)}&username=${creds.user}&password=${creds.pass}&name=${encodeURIComponent(s.name)}`;}
-                  }} className="flex items-center gap-2 bg-white text-black text-sm font-semibold px-5 py-2.5 rounded-xl hover:bg-zinc-200 transition-colors">
-                    <svg viewBox="0 0 24 24" className="w-4 h-4" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>
-                    Assistir agora
-                  </button>
-                </>
-              ) : (
-                <>
-                  <h1 className="text-2xl font-semibold text-white mb-1">Bem-vindo</h1>
-                  <p className="text-sm text-zinc-400">Conecte um servidor para ver conteúdo</p>
-                </>
-              )}
-            </div>
-          </div>
-        </div>
-        {sliderItems.length > 1 && (
-          <div className="absolute bottom-3 right-4 flex items-center gap-1.5">
-            {sliderItems.map((_,i)=>(
-              <button key={i} onClick={()=>setSliderIndex(i)}
-                className={`rounded-full transition-all ${i===sliderIndex?"w-4 h-1.5 bg-white":"w-1.5 h-1.5 bg-white/30 hover:bg-white/60"}`}/>
-            ))}
-          </div>
-        )}
-        {sliderItems.length > 1 && (
-          <>
-            <button onClick={()=>setSliderIndex(i=>(i-1+sliderItems.length)%sliderItems.length)}
-              className="absolute left-2 top-1/2 -translate-y-1/2 w-8 h-8 rounded-full bg-black/40 flex items-center justify-center hover:bg-black/70 transition-colors">
-              <svg viewBox="0 0 24 24" className="w-4 h-4 text-white" fill="none" stroke="currentColor" strokeWidth={2}><path d="M15 18l-6-6 6-6"/></svg>
-            </button>
-            <button onClick={()=>setSliderIndex(i=>(i+1)%sliderItems.length)}
-              className="absolute right-2 top-1/2 -translate-y-1/2 w-8 h-8 rounded-full bg-black/40 flex items-center justify-center hover:bg-black/70 transition-colors">
-              <svg viewBox="0 0 24 24" className="w-4 h-4 text-white" fill="none" stroke="currentColor" strokeWidth={2}><path d="M9 18l6-6-6-6"/></svg>
-            </button>
-          </>
-        )}
-      </div>
+      {/* Hero */}
+      <HeroSlider items={sliderItems} creds={creds} />
 
-      <div className="px-4 sm:px-6 space-y-8 mt-6">
-        {/* Histórico recente — só mostrar se tiver ao menos 3 items */}
+      {/* Content Rows */}
+      <div className="mt-4 space-y-6">
+        {/* Historico */}
         {history.length > 0 && (
-          <section>
-            <h2 className="text-base font-semibold text-white mb-3">Assistidos recentemente</h2>
-            <div className="flex gap-2" style={{overflowX:"auto",scrollbarWidth:"none",msOverflowStyle:"none"}}>
-              {history.slice(0,8).map((item, i) => (
-                <div key={`${item.id}-${i}`} onClick={()=>openHistory(item)} className="cursor-pointer group flex-shrink-0" style={{width:"clamp(100px, calc(12.5% - 7px), 160px)"}}>
-                  <div className="relative rounded-xl overflow-hidden bg-zinc-900 border border-zinc-800 group-hover:border-violet-600 transition-all mb-1.5 flex items-center justify-center" style={{height:"80px"}}>
-                    <div className="w-full h-full flex items-center justify-center" style={{background:accentColors[i%8]+"22"}}>
-                      <svg viewBox="0 0 24 24" className="w-7 h-7" fill={accentColors[i%8]}><path d="M8 5v14l11-7z"/></svg>
-                    </div>
-
-                    <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center z-10">
-                      <div className="w-8 h-8 rounded-full bg-white/90 flex items-center justify-center">
-                        <svg viewBox="0 0 24 24" className="w-4 h-4" fill="#000"><path d="M8 5v14l11-7z"/></svg>
-                      </div>
-                    </div>
-                  </div>
-                  <p className="text-xs text-white truncate">{item.name}</p>
-                  <p className="text-[10px] text-zinc-500">{item.type==="live"?"Canal ao vivo":item.type==="vod"?"Filme":"Série"}</p>
-                </div>
-              ))}
-            </div>
-          </section>
+          <ScrollRow label="Assistidos recentemente" count={history.length}>
+            {history.map((item, i) => (
+              <HistoryCard key={+""+${item.id}-+""+} item={item} onClick={()=>openHistory(item)} index={i} />
+            ))}
+          </ScrollRow>
         )}
 
         {/* Canais ao vivo */}
-        {(loading || channels.length > 0) && (
-          <section>
-            <div className="flex items-center justify-between mb-3">
-              <h2 className="text-base font-semibold text-white">Canais ao vivo</h2>
-              <Link href="/channels" className="text-xs text-white/60 hover:text-white transition-colors">Ver todos</Link>
-            </div>
-            {loading ? (
-              <div className="flex gap-3">{[...Array(4)].map((_,i)=><div key={i} className="flex-shrink-0 w-40 h-28 bg-zinc-900 rounded-xl animate-pulse"/>)}</div>
-            ) : (
-              <div className="flex gap-2" style={{overflowX:"auto",scrollbarWidth:"none",msOverflowStyle:"none"}}>
-                {channels.slice(0,8).map(ch => (
-                  <div key={ch.stream_id} onClick={()=>openChannel(ch)} className="cursor-pointer group flex-shrink-0" style={{width:"clamp(100px, calc(12.5% - 7px), 160px)"}}>
-                    <div className="relative rounded-xl overflow-hidden bg-zinc-900 border border-zinc-800 group-hover:border-violet-600 transition-all mb-2 h-24 flex items-center justify-center">
-
-                      {ch.stream_icon
-                        ? <img src={ch.stream_icon} alt={ch.name} className="w-16 h-12 object-contain" onError={e=>{(e.target as HTMLImageElement).style.display="none"}}/>
-                        : <span className="text-lg font-bold text-white/20">{ch.name.slice(0,3).toUpperCase()}</span>
-                      }
-                      <div className="absolute bottom-1.5 right-1.5">
-                        <div className="w-1.5 h-1.5 rounded-full bg-red-500 animate-pulse"/>
-                      </div>
-                    </div>
-                    <p className="text-xs text-white truncate">{ch.name}</p>
-                  </div>
-                ))}
-              </div>
-            )}
-          </section>
+        {channels.length > 0 && (
+          <ScrollRow label="Canais ao vivo" linkHref="/channels" linkText="Ver todos" count={channels.length}>
+            {channels.map(ch => (
+              <LiveCard key={ch.stream_id} ch={ch} onClick={()=>openChannel(ch)} />
+            ))}
+          </ScrollRow>
         )}
 
         {/* Filmes */}
-        {(loading || movies.length > 0) && (
-          <section>
-            <div className="flex items-center justify-between mb-3">
-              <h2 className="text-base font-semibold text-white">Últimos filmes adicionados</h2>
-              <Link href="/movies" className="text-xs text-white/60 hover:text-white transition-colors">Ver catálogo</Link>
-            </div>
-            {loading ? (
-              <div className="flex gap-3">{[...Array(5)].map((_,i)=><div key={i} className="flex-shrink-0 w-28 h-40 bg-zinc-900 rounded-xl animate-pulse"/>)}</div>
-            ) : (
-              <div className="flex gap-2" style={{overflowX:"auto",scrollbarWidth:"none",msOverflowStyle:"none"}}>
-                {movies.slice(0,10).map((m,i) => (
-                  <div key={m.stream_id} onClick={()=>openMovie(m)} className="cursor-pointer group flex-shrink-0" style={{width:"clamp(100px, calc(12.5% - 7px), 160px)"}}>
-                    <div className="rounded-xl overflow-hidden border border-zinc-800 group-hover:border-violet-600 transition-all mb-1.5 relative"
-                      style={{aspectRatio:"2/3", background: m.stream_icon?"#111":accentColors[i%8]+"22"}}>
-                      {m.stream_icon
-                        ? <img src={proxyUrl(m.stream_icon)} alt={m.name} className="w-full h-full object-cover" onError={e=>{(e.target as HTMLImageElement).style.display="none"}}/>
-                        : <div className="w-full h-full flex items-center justify-center"><svg viewBox="0 0 24 24" className="w-8 h-8" fill={accentColors[i%8]}><path d="M8 5v14l11-7z"/></svg></div>
-                      }
-                      <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
-                        <div className="w-9 h-9 rounded-full bg-white/90 flex items-center justify-center">
-                          <svg viewBox="0 0 24 24" className="w-4 h-4" fill="#000"><path d="M8 5v14l11-7z"/></svg>
-                        </div>
-                      </div>
-                    </div>
-                    <p className="text-xs text-white truncate">{m.name}</p>
-                  </div>
-                ))}
-              </div>
-            )}
-          </section>
+        {movies.length > 0 && (
+          <ScrollRow label="Ultimos filmes adicionados" linkHref="/movies" linkText="Ver catalogo" count={movies.length}>
+            {movies.map((m, i) => (
+              <PosterCard key={m.stream_id} title={m.name} image={m.stream_icon} onClick={()=>openMovie(m)} index={i} />
+            ))}
+          </ScrollRow>
         )}
 
-        {/* Séries */}
-        {(loading || series.length > 0) && (
-          <section>
-            <div className="flex items-center justify-between mb-3">
-              <h2 className="text-base font-semibold text-white">Últimas séries adicionadas</h2>
-              <Link href="/series" className="text-xs text-white/60 hover:text-white transition-colors">Ver catálogo</Link>
-            </div>
-            {loading ? (
-              <div className="flex gap-3">{[...Array(5)].map((_,i)=><div key={i} className="flex-shrink-0 w-28 h-40 bg-zinc-900 rounded-xl animate-pulse"/>)}</div>
-            ) : (
-              <div className="flex gap-2 md:overflow-hidden no-scrollbar" style={{overflowX:"auto"}}>
-                {series.slice(0,10).map((s,i) => (
-                  <div key={s.series_id} onClick={()=>openSeries(s)} className="cursor-pointer group flex-shrink-0" style={{width:"clamp(100px, calc(10% - 7.2px), 150px)"}}>
-                    <div className="rounded-xl overflow-hidden border border-zinc-800 group-hover:border-violet-600 transition-all mb-1.5 relative"
-                      style={{aspectRatio:"2/3", background: s.cover?"#111":accentColors[i%8]+"22"}}>
-                      {s.cover
-                        ? <img src={proxyUrl(s.cover)} alt={s.name} className="w-full h-full object-cover" onError={e=>{(e.target as HTMLImageElement).style.display="none"}}/>
-                        : <div className="w-full h-full flex items-center justify-center"><svg viewBox="0 0 24 24" className="w-8 h-8" fill={accentColors[i%8]}><path d="M2 2h20v20H2zM7 2v20M17 2v20M2 12h20"/></svg></div>
-                      }
-                      <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
-                        <div className="w-9 h-9 rounded-full bg-white/90 flex items-center justify-center">
-                          <svg viewBox="0 0 24 24" className="w-4 h-4" fill="#000"><path d="M8 5v14l11-7z"/></svg>
-                        </div>
-                      </div>
-                    </div>
-                    <p className="text-xs text-white truncate">{s.name}</p>
-                  </div>
-                ))}
-              </div>
-            )}
-          </section>
+        {/* Series */}
+        {series.length > 0 && (
+          <ScrollRow label="Ultimas series adicionadas" linkHref="/series" linkText="Ver catalogo" count={series.length}>
+            {series.map((s, i) => (
+              <PosterCard key={s.series_id} title={s.name} image={s.cover} onClick={()=>openSeries(s)} index={i} />
+            ))}
+          </ScrollRow>
         )}
       </div>
     </div>

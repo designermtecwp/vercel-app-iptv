@@ -1,12 +1,37 @@
-@import "tailwindcss";
+﻿@import "tailwindcss";
 
 body { background: #0a0a0a; color: #fff; }
-::-webkit-scrollbar { width: 4px; height: 4px; }
-::-webkit-scrollbar-thumb { background: #333; border-radius: 2px; }
+
+/* ===== Variaveis de Design ===== */
+:root {
+  --app-bg: #09090b;
+  --surface: #111113;
+  --surface-hover: #18181b;
+  --border-subtle: rgba(255,255,255,0.04);
+  --border-hover: rgba(255,255,255,0.10);
+  --text-primary: #f0f0f5;
+  --text-secondary: #8b8b9a;
+  --text-muted: #4a4a5a;
+  --accent: #7c3aed;
+  --accent-glow: rgba(124,58,237,0.15);
+  --card-radius: 6px;
+  --row-gap: 14px;
+}
+
+/* ===== Scrollbar ===== */
+::-webkit-scrollbar { width: 4px; height: 0px; }
+::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.06); border-radius: 4px; }
+::-webkit-scrollbar-thumb:hover { background: rgba(255,255,255,0.12); }
 .hide-scrollbar::-webkit-scrollbar { display: none; }
 .hide-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+.no-scrollbar::-webkit-scrollbar { display: none; }
+.no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
 
-/* Mobile optimizations */
+/* ===== Smooth ===== */
+html { scroll-behavior: smooth; -webkit-font-smoothing: antialiased; }
+* { -webkit-tap-highlight-color: transparent; }
+
+/* ===== Mobile text scale (preservado) ===== */
 @media (max-width: 768px) {
   h1 { font-size: 1.1rem !important; }
   h2 { font-size: 0.95rem !important; }
@@ -16,56 +41,87 @@ body { background: #0a0a0a; color: #fff; }
   .text-4xl { font-size: 1.6rem !important; }
 }
 
-/* Prevent text selection on tap */
-* { -webkit-tap-highlight-color: transparent; }
-
-/* Smooth scrolling */
-html { scroll-behavior: smooth; }
-
-/* TV D-pad focus styles */
+/* ===== TV D-pad focus ===== */
 :focus-visible {
-  outline: 3px solid #7c3aed !important;
-  outline-offset: 2px !important;
-  border-radius: 8px;
+  outline: 1px solid rgba(124,58,237,0.6) !important;
+  outline-offset: 1px !important;
+  border-radius: 5px;
 }
 a:focus-visible, button:focus-visible {
-  box-shadow: 0 0 0 3px #7c3aed66;
+  box-shadow: 0 0 0 1px rgba(124,58,237,0.3) !important;
 }
-/* Hide scrollbar */
-.hide-scrollbar::-webkit-scrollbar { display: none; }
-.hide-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
-/* TV safe area */
+
+/* ===== TV safe area ===== */
 @media (min-width: 1280px) and (hover: none) {
   body { padding: env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left); }
 }
 
-/* Esconder scrollbar mantendo funcionalidade */
-.no-scrollbar { scrollbar-width: none; -ms-overflow-style: none; }
-.no-scrollbar::-webkit-scrollbar { display: none; }
-
-
-
-/* Bordas padrão 5px em todos os cards */
+/* ===== Bordas padrao 5px ===== */
 .rounded-xl { border-radius: 5px !important; }
 .rounded-2xl { border-radius: 5px !important; }
 .rounded-lg { border-radius: 5px !important; }
 
-/* TV focus - barra mais fina */
-:focus-visible {
-  border-radius: 5px;
-  outline-offset: 1px !important;
-  outline: 1px solid #7c3aed !important;
+/* ===== Animacoes refinadas ===== */
+@keyframes fadeInUp {
+  from { opacity: 0; transform: translateY(16px); }
+  to { opacity: 1; transform: translateY(0); }
 }
-a:focus-visible, button:focus-visible {
-  box-shadow: 0 0 0 1px #7c3aed66 !important;
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+@keyframes shimmer {
+  0% { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+@keyframes heroSlideIn {
+  from { opacity: 0; transform: scale(1.05); }
+  to { opacity: 1; transform: scale(1); }
+}
+@keyframes slideIn {
+  from { transform: translateX(20px); opacity: 0; }
+  to { transform: translateX(0); opacity: 1; }
 }
 
-/* TV focus - barra mais fina */
-:focus-visible {
-  border-radius: 5px;
-  outline-offset: 1px !important;
-  outline: 1px solid #7c3aed !important;
+.skeleton-shimmer {
+  background: linear-gradient(90deg, #111113 0%, #1a1a1f 50%, #111113 100%);
+  background-size: 200% 100%;
+  animation: shimmer 1.5s ease-in-out infinite;
 }
-a:focus-visible, button:focus-visible {
-  box-shadow: 0 0 0 1px #7c3aed66 !important;
+
+/* ===== Desktop home rows (nao afeta mobile) ===== */
+@media (min-width: 768px) {
+  .home-row-scroll {
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+    scroll-snap-type: x proximity;
+    scroll-padding-left: 24px;
+  }
+  .home-row-scroll::-webkit-scrollbar { display: none; }
+  .home-card-item { scroll-snap-align: start; }
+
+  .home-card-item .card-img {
+    transition: transform 220ms cubic-bezier(0.4,0,0.2,1),
+                border-color 220ms ease,
+                box-shadow 220ms ease;
+  }
+  .home-card-item:hover .card-img,
+  .home-card-item:focus-within .card-img {
+    transform: scale(1.04);
+    border-color: rgba(255,255,255,0.12) !important;
+    box-shadow: 0 8px 30px rgba(0,0,0,0.5);
+  }
+  .home-card-item .card-title {
+    transition: color 200ms ease;
+  }
+  .home-card-item:hover .card-title {
+    color: #f0f0f5 !important;
+  }
+  .home-card-item .card-overlay {
+    opacity: 0;
+    transition: opacity 200ms ease;
+  }
+  .home-card-item:hover .card-overlay {
+    opacity: 1;
+  }
 }
