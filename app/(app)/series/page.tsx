@@ -1,6 +1,5 @@
 "use client";
 import { fetchXtream } from "@/lib/fetch-proxy";
-import { detectTV } from "@/lib/tv";
 import { getSettings, sortItems } from "@/lib/settings";
 import { useState, useEffect, useRef } from "react";
 
@@ -21,15 +20,9 @@ export default function SeriesPage() {
   const [loading, setLoading] = useState(true);
   const [creds, setCreds] = useState<{dns:string;user:string;pass:string}|null>(null);
   const [showCats, setShowCats] = useState(false);
-  const [hiddenCats, setHiddenCats] = useState<{id:string;name:string}[]>([]);
-  const [isTV, setIsTV] = useState(false);
-  const [isMobile, setIsMobile] = useState(false);
   const drawerRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    try { setHiddenCats(JSON.parse(localStorage.getItem("iptv_hidden_cats") || "[]")); } catch {}
-    setIsTV(detectTV());
-    setIsMobile(window.innerWidth < 640);
     const dns = localStorage.getItem("xtream_dns");
     const user = localStorage.getItem("xtream_user");
     const pass = localStorage.getItem("xtream_pass");
@@ -53,7 +46,8 @@ export default function SeriesPage() {
   }, [showCats]);
 
   const filtered = items.filter(m => {
-    if (hiddenCats?.find((h: {id:string}) => h.id === m.category_id)) return false;
+    const s = getSettings();
+    if (s.hiddenCats.find((h: {id:string}) => h.id === m.category_id)) return false;
     return m.name.toLowerCase().includes(search.toLowerCase());
   });
 
@@ -62,34 +56,34 @@ export default function SeriesPage() {
 
   return (
     <div className="h-screen flex flex-col overflow-hidden">
-      <div style={{ display:"flex", alignItems:"center", gap:"10px", padding: isTV ? "20px 28px 14px" : "14px 14px 10px", flexShrink:0 }}>
-        {!isMobile && (
-          <h1 style={{ fontSize: isTV ? "22px" : "16px", fontWeight:700, color:"#fff", marginRight:"auto", whiteSpace:"nowrap" }}>
-            Séries
-            {filtered.length > 0 && <span style={{ fontSize:"12px", color:"rgba(255,255,255,0.4)", fontWeight:400, marginLeft:"8px" }}>{filtered.length}</span>}
-          </h1>
-        )}
-        <div style={{ position:"relative", flex: isMobile ? 1 : "0 0 260px" }}>
-          <svg style={{ position:"absolute", left:"10px", top:"50%", transform:"translateY(-50%)", width:"14px", height:"14px", color:"#52525b" }} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.8}><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg>
-          <input type="text" placeholder="Buscar série..." value={search} onChange={e=>setSearch(e.target.value)}
-            style={{ background:"#111113", border:"1px solid rgba(255,255,255,0.08)", color:"#fff", paddingLeft:"32px", paddingRight:"14px", paddingTop:"9px", paddingBottom:"9px", borderRadius:"8px", fontSize: isTV ? "15px" : "13px", width:"100%", outline:"none" }}/>
+      <div className="flex items-center justify-between px-4 pt-4 pb-3 sm:px-6 sm:pt-8 flex-shrink-0">
+        <div className="hidden sm:flex items-center gap-3">
+          <h1 className="text-xl font-semibold text-white">Séries</h1>
+          {filtered.length>0&&<span className="text-xs text-white/60 bg-white/10 px-2 py-0.5 rounded-full border border-white/20">{filtered.length}</span>}
         </div>
-        <button onClick={()=>setShowCats(true)} tabIndex={0}
-          style={{ display:"flex", alignItems:"center", gap:"8px", padding:"9px 16px", borderRadius:"8px", border:"1px solid", fontSize: isTV ? "14px" : "13px", fontWeight:500, cursor:"pointer", flexShrink:0, background: showCats||genre!=="all" ? "#7c3aed" : "#111113", borderColor: showCats||genre!=="all" ? "#7c3aed" : "rgba(255,255,255,0.08)", color: showCats||genre!=="all" ? "#fff" : "rgba(255,255,255,0.6)" }}>
-          <svg style={{ width:"14px", height:"14px" }} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.8}><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg>
-          <span style={{ maxWidth:"120px", overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap" }}>{genre==="all"?"Categorias":activeCat?.category_name||"Categoria"}</span>
-        </button>
+        <div className="flex items-center gap-3.5 flex-1 sm:flex-none">
+          <div className="relative">
+            <svg className="absolute left-2 top-1/2 -translate-y-1/2 w-3 h-3 sm:w-4 sm:h-4 text-zinc-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.8}><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg>
+            <input type="text" placeholder="Buscar série..." value={search} onChange={e=>setSearch(e.target.value)}
+              className="bg-zinc-900 border border-zinc-800 text-sm text-white pl-9 pr-4 py-2 rounded-xl focus:outline-none focus:border-violet-500 placeholder-zinc-600 w-44"/>
+          </div>
+          <button onClick={()=>setShowCats(true)}
+            className={`flex items-center gap-3.5 text-sm px-4 py-2 rounded-xl border transition-all flex-shrink-0 ${showCats||genre!=="all" ? "bg-violet-600 border-violet-600 text-white" : "bg-zinc-900 border-zinc-800 text-zinc-400 hover:text-white hover:border-zinc-600"}`}>
+            <svg viewBox="0 0 24 24" className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth={1.8}><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg>
+            {genre==="all"?"Categorias":activeCat?.category_name||"Categoria"}
+          </button>
+        </div>
       </div>
 
-      <div style={{ flex:1, overflowY:"auto", padding: isTV ? "12px 28px 32px" : "8px 14px 24px" }}>
+      <div className="flex-1 overflow-y-auto px-6 pb-6 overflow-x-hidden">
         {loading?(
-          <div style={{ display:"grid", gridTemplateColumns: isMobile ? "repeat(3, 1fr)" : isTV ? "repeat(auto-fill, minmax(175px, 1fr))" : "repeat(auto-fill, minmax(150px, 1fr))", gap: isMobile ? "8px" : isTV ? "16px" : "12px" }}>
-            {[...Array(12)].map((_,i)=><div key={i} style={{ borderRadius:"8px", aspectRatio:"2/3", background:"#111113", animation:"shimmer 1.8s ease-in-out infinite" }}/>)}
+          <div className="grid grid-cols-3 sm:grid-cols-4 lg:grid-cols-5 gap-3">
+            {[...Array(10)].map((_,i)=><div key={i} className="rounded-xl aspect-[2/3] bg-zinc-900 animate-pulse"/>)}
           </div>
         ):filtered.length===0?(
           <div className="flex items-center justify-center h-full text-zinc-600"><p className="text-sm">Nenhuma série encontrada</p></div>
         ):(
-          <div style={{ display:"grid", gridTemplateColumns: isMobile ? "repeat(3, 1fr)" : isTV ? "repeat(auto-fill, minmax(175px, 1fr))" : "repeat(auto-fill, minmax(150px, 1fr))", gap: isMobile ? "8px" : isTV ? "16px" : "12px" }}>
+          <div className="grid grid-cols-3 sm:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-3.5 sm:gap-4 p-1">
             {filtered.slice(0,120).map((item)=>(
               <div key={item.series_id} onClick={()=>{ if(creds) window.location.href=`/series/${item.series_id}?dns=${encodeURIComponent(creds.dns)}&username=${creds.user}&password=${creds.pass}&name=${encodeURIComponent(item.name)}`; }}
                 tabIndex={0} className="cursor-pointer group">
