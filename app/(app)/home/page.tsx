@@ -13,8 +13,7 @@ function getHistory(): HistoryItem[] {
 }
 
 function NotificationPopup({ message }: { message: string }) {
-  const key = +""+
-otif_+""++btoa(encodeURIComponent(message)).slice(0,30);
+  const key = "notif_" + btoa(encodeURIComponent(message)).slice(0,30);
   const [visible, setVisible] = React.useState(() => {
     try { return localStorage.getItem(key) !== "closed"; } catch { return true; }
   });
@@ -38,11 +37,10 @@ otif_+""++btoa(encodeURIComponent(message)).slice(0,30);
 
 function proxyUrl(url: string): string {
   if (!url) return url;
-  if (url.startsWith("http://")) return +""+/api/img?url=+""++encodeURIComponent(url);
+  if (url.startsWith("http://")) return "/api/img?url=" + encodeURIComponent(url);
   return url;
 }
 
-/* ========== Scroll Row Wrapper com setas ========== */
 function ScrollRow({ children, label, linkHref, linkText, count }: {
   children: React.ReactNode;
   label: string;
@@ -78,12 +76,7 @@ function ScrollRow({ children, label, linkHref, linkText, count }: {
   };
 
   return (
-    <section
-      className="relative"
-      onMouseEnter={() => setHovering(true)}
-      onMouseLeave={() => setHovering(false)}
-    >
-      {/* Header */}
+    <section className="relative" onMouseEnter={() => setHovering(true)} onMouseLeave={() => setHovering(false)}>
       <div className="flex items-center justify-between mb-2.5 px-5 sm:px-6">
         <div className="flex items-center gap-2">
           <h2 className="text-sm font-semibold text-white/90 tracking-tight">{label}</h2>
@@ -95,26 +88,18 @@ function ScrollRow({ children, label, linkHref, linkText, count }: {
           <Link href={linkHref} className="text-xs font-medium transition-colors" style={{color:"#4a4a5a"}}
             onMouseEnter={e=>{e.currentTarget.style.color="#f0f0f5"}}
             onMouseLeave={e=>{e.currentTarget.style.color="#4a4a5a"}}>
-            {linkText || "Ver tudo"} <span style={{marginLeft:"2px"}}>›</span>
+            {linkText || "Ver tudo"} <span style={{marginLeft:"2px"}}>{">"}</span>
           </Link>
         )}
       </div>
-
-      {/* Scroll container */}
       <div className="relative">
-        <div ref={ref} className="flex gap-[var(--row-gap)] overflow-x-auto home-row-scroll px-5 sm:px-6 pb-2" style={{scrollbarWidth:"none",msOverflowStyle:"none"}}>
+        <div ref={ref} className="flex gap-[14px] overflow-x-auto home-row-scroll px-5 sm:px-6 pb-2" style={{scrollbarWidth:"none",msOverflowStyle:"none"}}>
           {children}
         </div>
-
-        {/* Fade esquerda */}
         <div className="hidden md:block absolute left-0 top-0 bottom-0 w-10 pointer-events-none z-10 transition-opacity duration-300"
-          style={{background:"linear-gradient(to right, var(--app-bg, #09090b), transparent)", opacity: canLeft ? 1 : 0}} />
-
-        {/* Fade direita */}
+          style={{background:"linear-gradient(to right, #09090b, transparent)", opacity: canLeft ? 1 : 0}} />
         <div className="hidden md:block absolute right-0 top-0 bottom-0 w-10 pointer-events-none z-10 transition-opacity duration-300"
-          style={{background:"linear-gradient(to left, var(--app-bg, #09090b), transparent)", opacity: canRight ? 1 : 0}} />
-
-        {/* Seta esquerda */}
+          style={{background:"linear-gradient(to left, #09090b, transparent)", opacity: canRight ? 1 : 0}} />
         {canLeft && (
           <button onClick={() => scroll("left")}
             className="hidden md:flex absolute left-1.5 top-1/2 -translate-y-1/2 z-20 items-center justify-center transition-all"
@@ -123,8 +108,6 @@ function ScrollRow({ children, label, linkHref, linkText, count }: {
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
           </button>
         )}
-
-        {/* Seta direita */}
         {canRight && (
           <button onClick={() => scroll("right")}
             className="hidden md:flex absolute right-1.5 top-1/2 -translate-y-1/2 z-20 items-center justify-center transition-all"
@@ -138,22 +121,20 @@ function ScrollRow({ children, label, linkHref, linkText, count }: {
   );
 }
 
-/* ========== Card Poster (Filmes/Series) ========== */
+const ACCENTS = ["#7c3aed","#3b82f6","#f59e0b","#ef4444","#10b981","#6366f1","#ec4899","#f97316"];
+
 function PosterCard({ title, image, onClick, index }: { title:string; image:string; onClick:()=>void; index:number }) {
   const [loaded, setLoaded] = useState(false);
   const [error, setError] = useState(false);
-  const accent = ["#7c3aed","#3b82f6","#f59e0b","#ef4444","#10b981","#6366f1","#ec4899","#f97316"][index % 8];
+  const accent = ACCENTS[index % 8];
   return (
     <div onClick={onClick} className="cursor-pointer home-card-item flex-shrink-0" style={{width:"clamp(100px, calc(12.5% - 12.25px), 155px)"}}>
       <div className="card-img relative overflow-hidden mb-1.5"
-        style={{aspectRatio:"2/3",borderRadius:"var(--card-radius,6px)",background:image?"#111113":accent+"18",
-          border:"1px solid rgba(255,255,255,0.03)"}}>
+        style={{aspectRatio:"2/3",borderRadius:6,background:image?"#111113":accent+"18",border:"1px solid rgba(255,255,255,0.03)"}}>
         {image && !error ? (
-          <img src={proxyUrl(image)} alt={title}
-            className="w-full h-full object-cover"
+          <img src={proxyUrl(image)} alt={title} className="w-full h-full object-cover"
             style={{opacity:loaded?1:0,transition:"opacity 0.3s ease"}}
-            onLoad={()=>setLoaded(true)}
-            onError={()=>setError(true)} />
+            onLoad={()=>setLoaded(true)} onError={()=>setError(true)} />
         ) : null}
         {!loaded && !error && image && <div className="absolute inset-0 skeleton-shimmer"/>}
         {(error || !image) && (
@@ -161,11 +142,9 @@ function PosterCard({ title, image, onClick, index }: { title:string; image:stri
             <svg viewBox="0 0 24 24" className="w-7 h-7" fill={accent} opacity={0.5}><path d="M8 5v14l11-7z"/></svg>
           </div>
         )}
-        {/* Hover overlay */}
         <div className="card-overlay absolute inset-0 flex items-center justify-center"
           style={{background:"linear-gradient(to top, rgba(0,0,0,0.7) 0%, rgba(0,0,0,0.1) 60%)"}}>
-          <div style={{width:36,height:36,borderRadius:"50%",background:"rgba(255,255,255,0.12)",backdropFilter:"blur(8px)",border:"1px solid rgba(255,255,255,0.15)",
-            display:"flex",alignItems:"center",justifyContent:"center"}}>
+          <div style={{width:36,height:36,borderRadius:"50%",background:"rgba(255,255,255,0.12)",backdropFilter:"blur(8px)",border:"1px solid rgba(255,255,255,0.15)",display:"flex",alignItems:"center",justifyContent:"center"}}>
             <svg viewBox="0 0 24 24" width="15" height="15" fill="white"><polygon points="8,5 20,12 8,19"/></svg>
           </div>
         </div>
@@ -175,34 +154,26 @@ function PosterCard({ title, image, onClick, index }: { title:string; image:stri
   );
 }
 
-/* ========== Card Canal Live ========== */
 function LiveCard({ ch, onClick }: { ch:Channel; onClick:()=>void }) {
   const [loaded, setLoaded] = useState(false);
   return (
     <div onClick={onClick} className="cursor-pointer home-card-item flex-shrink-0" style={{width:"clamp(100px, calc(12.5% - 12.25px), 155px)"}}>
       <div className="card-img relative overflow-hidden mb-1.5 flex items-center justify-center"
-        style={{height:90,borderRadius:"var(--card-radius,6px)",background:"#111113",
-          border:"1px solid rgba(255,255,255,0.03)"}}>
+        style={{height:90,borderRadius:6,background:"#111113",border:"1px solid rgba(255,255,255,0.03)"}}>
         {ch.stream_icon ? (
-          <img src={ch.stream_icon} alt={ch.name}
-            className="w-16 h-12 object-contain"
+          <img src={ch.stream_icon} alt={ch.name} className="w-16 h-12 object-contain"
             style={{opacity:loaded?1:0,transition:"opacity 0.3s ease"}}
-            onLoad={()=>setLoaded(true)}
-            onError={e=>{(e.target as HTMLImageElement).style.display="none"}} />
+            onLoad={()=>setLoaded(true)} onError={e=>{(e.target as HTMLImageElement).style.display="none"}} />
         ) : (
           <span className="text-base font-bold" style={{color:"rgba(255,255,255,0.12)"}}>{ch.name.slice(0,3).toUpperCase()}</span>
         )}
-        {/* Live badge */}
         <div className="absolute top-1.5 left-1.5 flex items-center gap-1 px-1.5 py-0.5 rounded"
-          style={{background:"rgba(239,68,68,0.80)",fontSize:"8px",fontWeight:700,color:"white",letterSpacing:"0.05em",textTransform:"uppercase"}}>
+          style={{background:"rgba(239,68,68,0.80)",fontSize:"8px",fontWeight:700,color:"white",letterSpacing:"0.05em",textTransform:"uppercase" as const}}>
           <div style={{width:4,height:4,borderRadius:"50%",background:"white"}}/>
           LIVE
         </div>
-        {/* Hover overlay */}
-        <div className="card-overlay absolute inset-0 flex items-center justify-center"
-          style={{background:"rgba(0,0,0,0.5)"}}>
-          <div style={{width:32,height:32,borderRadius:"50%",background:"rgba(255,255,255,0.12)",backdropFilter:"blur(8px)",border:"1px solid rgba(255,255,255,0.15)",
-            display:"flex",alignItems:"center",justifyContent:"center"}}>
+        <div className="card-overlay absolute inset-0 flex items-center justify-center" style={{background:"rgba(0,0,0,0.5)"}}>
+          <div style={{width:32,height:32,borderRadius:"50%",background:"rgba(255,255,255,0.12)",backdropFilter:"blur(8px)",border:"1px solid rgba(255,255,255,0.15)",display:"flex",alignItems:"center",justifyContent:"center"}}>
             <svg viewBox="0 0 24 24" width="13" height="13" fill="white"><polygon points="8,5 20,12 8,19"/></svg>
           </div>
         </div>
@@ -212,20 +183,18 @@ function LiveCard({ ch, onClick }: { ch:Channel; onClick:()=>void }) {
   );
 }
 
-/* ========== Card Historico ========== */
 function HistoryCard({ item, onClick, index }: { item:HistoryItem; onClick:()=>void; index:number }) {
-  const accent = ["#7c3aed","#3b82f6","#f59e0b","#ef4444","#10b981","#6366f1","#ec4899","#f97316"][index % 8];
+  const accent = ACCENTS[index % 8];
   const typeLabel = item.type==="live"?"Canal":item.type==="vod"?"Filme":"Serie";
+  const pct = (item.progress && item.duration && item.duration > 0) ? Math.min((item.progress/item.duration)*100,100) : 0;
   return (
     <div onClick={onClick} className="cursor-pointer home-card-item flex-shrink-0" style={{width:"clamp(100px, calc(12.5% - 12.25px), 155px)"}}>
       <div className="card-img relative overflow-hidden mb-1.5 flex items-center justify-center"
-        style={{height:80,borderRadius:"var(--card-radius,6px)",background:accent+"12",
-          border:"1px solid rgba(255,255,255,0.03)"}}>
+        style={{height:80,borderRadius:6,background:accent+"12",border:"1px solid rgba(255,255,255,0.03)"}}>
         <svg viewBox="0 0 24 24" className="w-6 h-6" fill={accent} opacity={0.7}><path d="M8 5v14l11-7z"/></svg>
-        {/* Progress bar */}
-        {item.progress && item.duration && item.duration > 0 && (
+        {pct > 0 && (
           <div className="absolute bottom-0 left-0 right-0 h-0.5" style={{background:"rgba(255,255,255,0.06)"}}>
-            <div style={{height:"100%",width:+""+${Math.min((item.progress/item.duration)*100,100)}%+""+,background:accent,borderRadius:2}}/>
+            <div style={{height:"100%",width:pct+"%",background:accent,borderRadius:2}}/>
           </div>
         )}
         <div className="card-overlay absolute inset-0 flex items-center justify-center" style={{background:"rgba(0,0,0,0.45)"}}>
@@ -240,106 +209,83 @@ function HistoryCard({ item, onClick, index }: { item:HistoryItem; onClick:()=>v
   );
 }
 
-
-/* ========== HERO SLIDER ========== */
 function HeroSlider({ items, creds }: { items:(VodItem|SeriesItem)[]; creds:{dns:string;user:string;pass:string}|null }) {
   const [index, setIndex] = useState(0);
-  const [transitioning, setTransitioning] = useState(false);
-  const [imgLoaded, setImgLoaded] = useState(false);
+  const [trans, setTrans] = useState(false);
+  const [imgOk, setImgOk] = useState(false);
 
   useEffect(() => {
     if (items.length === 0) return;
-    const interval = setInterval(() => {
-      setTransitioning(true);
-      setTimeout(() => {
-        setIndex(i => (i+1) % items.length);
-        setImgLoaded(false);
-        setTransitioning(false);
-      }, 350);
+    const iv = setInterval(() => {
+      setTrans(true);
+      setTimeout(() => { setIndex(i => (i+1) % items.length); setImgOk(false); setTrans(false); }, 350);
     }, 7000);
-    return () => clearInterval(interval);
+    return () => clearInterval(iv);
   }, [items.length]);
 
   const goTo = (i: number) => {
-    if (i === index || transitioning) return;
-    setTransitioning(true);
-    setTimeout(() => { setIndex(i); setImgLoaded(false); setTransitioning(false); }, 350);
+    if (i === index || trans) return;
+    setTrans(true);
+    setTimeout(() => { setIndex(i); setImgOk(false); setTrans(false); }, 350);
   };
 
-  const current = items[index];
-  if (!current) {
+  const cur = items[index];
+  if (!cur) {
     return (
       <div className="relative overflow-hidden" style={{height:"clamp(220px, 42vh, 420px)",background:"linear-gradient(135deg,#0d0522 0%,#0a1628 50%,#09090b 100%)"}}>
         <div className="absolute inset-0 flex items-end pb-10 px-5 sm:px-6">
-          <div>
-            <h1 className="text-xl font-semibold text-white mb-1">Bem-vindo</h1>
-            <p className="text-sm" style={{color:"#4a4a5a"}}>Seu conteudo aparecera aqui</p>
-          </div>
+          <div><h1 className="text-xl font-semibold text-white mb-1">Bem-vindo</h1><p className="text-sm" style={{color:"#4a4a5a"}}>Seu conteudo aparecera aqui</p></div>
         </div>
       </div>
     );
   }
 
-  const isVod = "stream_id" in current;
-  const imgSrc = isVod ? (current as VodItem).stream_icon : (current as SeriesItem).cover;
-  const title = current.name;
+  const isVod = "stream_id" in cur;
+  const imgSrc = isVod ? (cur as VodItem).stream_icon : (cur as SeriesItem).cover;
+  const title = cur.name;
 
   function handlePlay() {
     if (!creds) return;
     if (isVod) {
-      const v = current as VodItem;
-      window.location.href = +""+/movie/?dns=&username=&password=&name=&category_id=+""+;
+      const v = cur as VodItem;
+      window.location.href = "/movie/" + v.stream_id + "?dns=" + encodeURIComponent(creds.dns) + "&username=" + creds.user + "&password=" + creds.pass + "&name=" + encodeURIComponent(v.name) + "&category_id=" + v.category_id;
     } else {
-      const s = current as SeriesItem;
-      window.location.href = +""+/series/?dns=&username=&password=&name=+""+;
+      const s = cur as SeriesItem;
+      window.location.href = "/series/" + s.series_id + "?dns=" + encodeURIComponent(creds.dns) + "&username=" + creds.user + "&password=" + creds.pass + "&name=" + encodeURIComponent(s.name);
     }
   }
 
   return (
     <div className="relative overflow-hidden" style={{height:"clamp(220px, 42vh, 420px)"}}>
-      {/* BG Image */}
-      <div className="absolute inset-0 transition-opacity duration-500" style={{opacity: transitioning ? 0 : 1}}>
+      <div className="absolute inset-0 transition-opacity duration-500" style={{opacity: trans ? 0 : 1}}>
         {imgSrc && (
           <img src={imgSrc} alt="" className="w-full h-full object-cover"
-            style={{opacity:imgLoaded?1:0,transition:"opacity 0.5s ease",transform:"scale(1.03)",filter:"blur(1px)"}}
-            onLoad={()=>setImgLoaded(true)}
-            onError={e=>{(e.target as HTMLImageElement).style.display="none"}} />
+            style={{opacity:imgOk?1:0,transition:"opacity 0.5s ease",transform:"scale(1.03)",filter:"blur(1px)"}}
+            onLoad={()=>setImgOk(true)} onError={e=>{(e.target as HTMLImageElement).style.display="none"}} />
         )}
         <div className="absolute inset-0" style={{background:"linear-gradient(to right, rgba(9,9,11,0.96) 0%, rgba(9,9,11,0.65) 45%, rgba(9,9,11,0.25) 100%)"}}/>
         <div className="absolute inset-0" style={{background:"linear-gradient(to top, rgba(9,9,11,1) 0%, rgba(9,9,11,0.5) 35%, transparent 70%)"}}/>
       </div>
-
-      {/* Content */}
       <div className="absolute inset-0 flex items-end pb-8 sm:pb-10 px-5 sm:px-6">
-        <div className="flex items-end gap-4 max-w-2xl w-full transition-all duration-400"
-          style={{opacity:transitioning?0:1,transform:transitioning?"translateY(10px)":"translateY(0)"}}>
-          {/* Mini poster - desktop only */}
+        <div className="flex items-end gap-4 max-w-2xl w-full transition-all duration-400" style={{opacity:trans?0:1,transform:trans?"translateY(10px)":"translateY(0)"}}>
           {imgSrc && (
             <div className="hidden md:block flex-shrink-0 overflow-hidden" style={{width:80,aspectRatio:"2/3",borderRadius:6,border:"1px solid rgba(255,255,255,0.06)",boxShadow:"0 8px 30px rgba(0,0,0,0.5)"}}>
               <img src={imgSrc} alt="" className="w-full h-full object-cover" onError={e=>{(e.target as HTMLImageElement).style.display="none"}}/>
             </div>
           )}
           <div className="flex-1 min-w-0">
-            <p className="text-[10px] font-semibold uppercase tracking-widest mb-1.5" style={{color:"#7c3aed"}}>
-              {isVod ? "Filme em destaque" : "Serie em destaque"}
-            </p>
-            <h2 className="text-lg sm:text-xl md:text-2xl font-bold text-white mb-3 truncate" style={{letterSpacing:"-0.01em",lineHeight:1.2}}>
-              {title}
-            </h2>
+            <p className="text-[10px] font-semibold uppercase tracking-widest mb-1.5" style={{color:"#7c3aed"}}>{isVod ? "Filme em destaque" : "Serie em destaque"}</p>
+            <h2 className="text-lg sm:text-xl md:text-2xl font-bold text-white mb-3 truncate" style={{letterSpacing:"-0.01em",lineHeight:1.2}}>{title}</h2>
             <div className="flex items-center gap-2.5">
-              <button onClick={handlePlay}
-                className="flex items-center gap-2 font-semibold text-xs transition-all"
+              <button onClick={handlePlay} className="flex items-center gap-2 font-semibold text-xs transition-all"
                 style={{background:"white",color:"black",padding:"8px 20px",borderRadius:6}}
-                onMouseEnter={e=>{e.currentTarget.style.background="#e4e4e7"}}
-                onMouseLeave={e=>{e.currentTarget.style.background="white"}}>
+                onMouseEnter={e=>{e.currentTarget.style.background="#e4e4e7"}} onMouseLeave={e=>{e.currentTarget.style.background="white"}}>
                 <svg viewBox="0 0 24 24" width="13" height="13" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>
                 Assistir
               </button>
-              <button onClick={handlePlay}
-                className="flex items-center gap-1.5 font-medium text-xs transition-all"
+              <button onClick={handlePlay} className="flex items-center gap-1.5 font-medium text-xs transition-all"
                 style={{background:"rgba(255,255,255,0.07)",color:"#e4e4e7",padding:"8px 16px",borderRadius:6,border:"1px solid rgba(255,255,255,0.06)"}}
-                onMouseEnter={e=>{e.currentTarget.style.background="rgba(255,255,255,0.12)"}}
-                onMouseLeave={e=>{e.currentTarget.style.background="rgba(255,255,255,0.07)"}}>
+                onMouseEnter={e=>{e.currentTarget.style.background="rgba(255,255,255,0.12)"}} onMouseLeave={e=>{e.currentTarget.style.background="rgba(255,255,255,0.07)"}}>
                 <svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>
                 Detalhes
               </button>
@@ -347,14 +293,11 @@ function HeroSlider({ items, creds }: { items:(VodItem|SeriesItem)[]; creds:{dns
           </div>
         </div>
       </div>
-
-      {/* Dots */}
       {items.length > 1 && (
         <div className="absolute bottom-3 right-5 flex items-center gap-1">
           {items.map((_,i) => (
             <button key={i} onClick={()=>goTo(i)} className="transition-all duration-300"
-              style={{width:i===index?18:5,height:5,borderRadius:10,border:"none",cursor:"pointer",
-                background:i===index?"#7c3aed":"rgba(255,255,255,0.15)"}}/>
+              style={{width:i===index?18:5,height:5,borderRadius:10,border:"none",cursor:"pointer",background:i===index?"#7c3aed":"rgba(255,255,255,0.15)"}}/>
           ))}
         </div>
       )}
@@ -362,10 +305,6 @@ function HeroSlider({ items, creds }: { items:(VodItem|SeriesItem)[]; creds:{dns
   );
 }
 
-
-/* ================================================== */
-/* =================== HOME PAGE ==================== */
-/* ================================================== */
 export default function HomePage() {
   const [creds, setCreds] = useState<{dns:string;user:string;pass:string}|null>(null);
   const [adminConfig, setAdminConfig] = useState<{notification?:string;appName?:string;primaryColor?:string}>({});
@@ -385,14 +324,7 @@ export default function HomePage() {
         const styleId = "admin-theme";
         let style = document.getElementById(styleId) as HTMLStyleElement;
         if (!style) { style = document.createElement("style"); style.id = styleId; document.head.appendChild(style); }
-        style.textContent = +""+
-          .bg-violet-600, .hover\\:bg-violet-600:hover { background-color:  !important; }
-          .bg-violet-500, .hover\\:bg-violet-500:hover { background-color: dd !important; }
-          .text-violet-400, .text-violet-300 { color:  !important; }
-          .border-violet-500, .border-violet-600 { border-color:  !important; }
-          .bg-violet-600\\/20 { background-color: 33 !important; }
-          .ring-violet-400 { --tw-ring-color:  !important; }
-        +""+;
+        style.textContent = ".bg-violet-600,.hover\\:bg-violet-600:hover{background-color:" + cfg.primaryColor + "!important}.bg-violet-500,.hover\\:bg-violet-500:hover{background-color:" + cfg.primaryColor + "dd!important}.text-violet-400,.text-violet-300{color:" + cfg.primaryColor + "!important}.border-violet-500,.border-violet-600{border-color:" + cfg.primaryColor + "!important}.ring-violet-400{--tw-ring-color:" + cfg.primaryColor + "!important}";
       }
       if (cfg.appName) document.title = cfg.appName;
     }).catch(()=>{});
@@ -405,35 +337,28 @@ export default function HomePage() {
     setHistory(getHistory().slice(0, 8));
     if (dns && user && pass) {
       setCreds({dns, user, pass});
+      const base = dns + "/player_api.php?username=" + user + "&password=" + pass;
       Promise.all([
-        fetchXtream(+""+${dns}/player_api.php?username=&password=&action=get_live_streams+""+).catch(()=>[]),
-        fetchXtream(+""+${dns}/player_api.php?username=&password=&action=get_vod_categories+""+).catch(()=>[]),
-        fetchXtream(+""+${dns}/player_api.php?username=&password=&action=get_series_categories+""+).catch(()=>[]),
+        fetchXtream(base + "&action=get_live_streams").catch(()=>[]),
+        fetchXtream(base + "&action=get_vod_categories").catch(()=>[]),
+        fetchXtream(base + "&action=get_series_categories").catch(()=>[]),
       ]).then(async ([chs, vodCats, srsCats]) => {
         setChannels(Array.isArray(chs) ? chs.slice(0, 20) : []);
         setLoading(false);
-
         const vodCatList = Array.isArray(vodCats) ? vodCats : [];
         const srsCatList = Array.isArray(srsCats) ? srsCats : [];
         const firstVodCat = vodCatList[vodCatList.length - 1]?.category_id;
         const firstSrsCat = srsCatList[srsCatList.length - 1]?.category_id;
-
         const [vods, srs] = await Promise.all([
-          firstVodCat
-            ? fetchXtream(+""+${dns}/player_api.php?username=&password=&action=get_vod_streams&category_id=+""+).catch(()=>[])
-            : Promise.resolve([]),
-          firstSrsCat
-            ? fetchXtream(+""+${dns}/player_api.php?username=&password=&action=get_series&category_id=+""+).catch(()=>[])
-            : Promise.resolve([]),
+          firstVodCat ? fetchXtream(base + "&action=get_vod_streams&category_id=" + firstVodCat).catch(()=>[]) : Promise.resolve([]),
+          firstSrsCat ? fetchXtream(base + "&action=get_series&category_id=" + firstSrsCat).catch(()=>[]) : Promise.resolve([]),
         ]);
-
         const vodList = Array.isArray(vods) ? vods : [];
         const srsList = Array.isArray(srs) ? srs : [];
         setMovies(vodList.slice(0, 20));
         setSeries(srsList.slice(0, 20));
-
-        const vodWithCover = vodList.filter((v:VodItem)=>v.stream_icon).slice(0,5);
-        const srsWithCover = srsList.filter((s:SeriesItem)=>s.cover).slice(0,5);
+        const vodWithCover = vodList.filter(function(v: VodItem){return v.stream_icon}).slice(0,5);
+        const srsWithCover = srsList.filter(function(s: SeriesItem){return s.cover}).slice(0,5);
         setSliderItems([...vodWithCover, ...srsWithCover].sort(()=>Math.random()-0.5).slice(0,8));
       }).catch(() => { setLoading(false); });
     } else {
@@ -444,37 +369,38 @@ export default function HomePage() {
 
   function openChannel(ch: Channel) {
     if (!creds) return;
-    window.location.href = +""+/player?stream=&dns=&username=&password=&name=&type=live&icon=+""+;
+    window.location.href = "/player?stream=" + ch.stream_id + "&dns=" + encodeURIComponent(creds.dns) + "&username=" + creds.user + "&password=" + creds.pass + "&name=" + encodeURIComponent(ch.name) + "&type=live&icon=" + encodeURIComponent(ch.stream_icon||"");
   }
   function openMovie(m: VodItem) {
     if (!creds) return;
-    window.location.href = +""+/movie/?dns=&username=&password=&name=&category_id=&icon=+""+;
+    window.location.href = "/movie/" + m.stream_id + "?dns=" + encodeURIComponent(creds.dns) + "&username=" + creds.user + "&password=" + creds.pass + "&name=" + encodeURIComponent(m.name) + "&category_id=" + m.category_id + "&icon=" + encodeURIComponent(m.stream_icon||"");
   }
   function openSeries(s: SeriesItem) {
     if (!creds) return;
-    window.location.href = +""+/series/?dns=&username=&password=&name=&icon=+""+;
+    window.location.href = "/series/" + s.series_id + "?dns=" + encodeURIComponent(creds.dns) + "&username=" + creds.user + "&password=" + creds.pass + "&name=" + encodeURIComponent(s.name) + "&icon=" + encodeURIComponent(s.cover||"");
   }
   function openHistory(item: HistoryItem) {
     if (!creds) return;
-    if (item.type === "vod") window.location.href = +""+/movie/?dns=&username=&password=&name=&icon=+""+;
-    else if (item.type === "series") window.location.href = +""+/player?stream=&dns=&username=&password=&name=&type=series&icon=+""+;
-    else window.location.href = +""+/player?stream=&dns=&username=&password=&name=&type=live&icon=+""+;
+    if (item.type === "vod") {
+      window.location.href = "/movie/" + item.stream_id + "?dns=" + encodeURIComponent(creds.dns) + "&username=" + creds.user + "&password=" + creds.pass + "&name=" + encodeURIComponent(item.name) + "&icon=" + encodeURIComponent(item.icon||"");
+    } else if (item.type === "series") {
+      window.location.href = "/player?stream=" + item.stream_id + "&dns=" + encodeURIComponent(creds.dns) + "&username=" + creds.user + "&password=" + creds.pass + "&name=" + encodeURIComponent(item.name) + "&type=series&icon=" + encodeURIComponent(item.icon||"");
+    } else {
+      window.location.href = "/player?stream=" + item.stream_id + "&dns=" + encodeURIComponent(creds.dns) + "&username=" + creds.user + "&password=" + creds.pass + "&name=" + encodeURIComponent(item.name) + "&type=live&icon=" + encodeURIComponent(item.icon||"");
+    }
   }
 
-  /* === Loading State === */
   if (loading) {
     return (
-      <div className="min-h-full" style={{background:"var(--app-bg,#09090b)"}}>
-        {/* Hero skeleton */}
+      <div className="min-h-full" style={{background:"#09090b"}}>
         <div className="skeleton-shimmer" style={{height:"clamp(220px, 42vh, 420px)"}}/>
-        {/* Row skeletons */}
         <div className="px-5 sm:px-6 mt-6 space-y-8">
           {[1,2,3].map(n => (
             <div key={n}>
               <div className="skeleton-shimmer rounded mb-3" style={{width:140,height:14}}/>
-              <div className="flex gap-[var(--row-gap)]">
+              <div className="flex gap-[14px]">
                 {[...Array(8)].map((_,i) => (
-                  <div key={i} className="flex-shrink-0 skeleton-shimmer" style={{width:"clamp(100px, calc(12.5% - 12.25px), 155px)",aspectRatio:"2/3",borderRadius:"var(--card-radius,6px)"}}/>
+                  <div key={i} className="flex-shrink-0 skeleton-shimmer" style={{width:"clamp(100px, calc(12.5% - 12.25px), 155px)",aspectRatio:"2/3",borderRadius:6}}/>
                 ))}
               </div>
             </div>
@@ -485,25 +411,17 @@ export default function HomePage() {
   }
 
   return (
-    <div className="min-h-full pb-6" style={{background:"var(--app-bg,#09090b)"}}>
-      {/* Notificacao admin */}
+    <div className="min-h-full pb-6" style={{background:"#09090b"}}>
       {adminConfig.notification && <NotificationPopup message={adminConfig.notification} />}
-
-      {/* Hero */}
       <HeroSlider items={sliderItems} creds={creds} />
-
-      {/* Content Rows */}
       <div className="mt-4 space-y-6">
-        {/* Historico */}
         {history.length > 0 && (
           <ScrollRow label="Assistidos recentemente" count={history.length}>
             {history.map((item, i) => (
-              <HistoryCard key={+""+${item.id}-+""+} item={item} onClick={()=>openHistory(item)} index={i} />
+              <HistoryCard key={item.id + "-" + i} item={item} onClick={()=>openHistory(item)} index={i} />
             ))}
           </ScrollRow>
         )}
-
-        {/* Canais ao vivo */}
         {channels.length > 0 && (
           <ScrollRow label="Canais ao vivo" linkHref="/channels" linkText="Ver todos" count={channels.length}>
             {channels.map(ch => (
@@ -511,8 +429,6 @@ export default function HomePage() {
             ))}
           </ScrollRow>
         )}
-
-        {/* Filmes */}
         {movies.length > 0 && (
           <ScrollRow label="Ultimos filmes adicionados" linkHref="/movies" linkText="Ver catalogo" count={movies.length}>
             {movies.map((m, i) => (
@@ -520,8 +436,6 @@ export default function HomePage() {
             ))}
           </ScrollRow>
         )}
-
-        {/* Series */}
         {series.length > 0 && (
           <ScrollRow label="Ultimas series adicionadas" linkHref="/series" linkText="Ver catalogo" count={series.length}>
             {series.map((s, i) => (
