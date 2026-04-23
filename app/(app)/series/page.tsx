@@ -58,13 +58,13 @@ export default function SeriesPage() {
     <div className="h-screen flex flex-col overflow-hidden">
       <div className="flex items-center justify-between px-4 pt-4 pb-3 sm:px-6 sm:pt-8 flex-shrink-0">
         <div className="hidden sm:flex items-center gap-3">
-          <h1 className="text-xl font-semibold text-white">SÃ©ries</h1>
+          <h1 className="text-xl font-semibold text-white">séries</h1>
           {filtered.length>0&&<span className="text-xs text-white/60 bg-white/10 px-2 py-0.5 rounded-full border border-white/20">{filtered.length}</span>}
         </div>
         <div className="flex items-center gap-3.5 flex-1 sm:flex-none">
           <div className="relative">
             <svg className="absolute left-2 top-1/2 -translate-y-1/2 w-3 h-3 sm:w-4 sm:h-4 text-zinc-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.8}><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg>
-            <input type="text" placeholder="Buscar sÃ©rie..." value={search} onChange={e=>setSearch(e.target.value)}
+            <input type="text" placeholder="Buscar série..." value={search} onChange={e=>setSearch(e.target.value)}
               className="bg-zinc-900 border border-zinc-800 text-sm text-white pl-9 pr-4 py-2 rounded-xl focus:outline-none focus:border-violet-500 placeholder-zinc-600 w-44"/>
           </div>
           <button onClick={()=>setShowCats(true)}
@@ -81,7 +81,7 @@ export default function SeriesPage() {
             {[...Array(10)].map((_,i)=><div key={i} className="rounded-xl aspect-[2/3] bg-zinc-900 animate-pulse"/>)}
           </div>
         ):filtered.length===0?(
-          <div className="flex items-center justify-center h-full text-zinc-600"><p className="text-sm">Nenhuma sÃ©rie encontrada</p></div>
+          <div className="flex items-center justify-center h-full text-zinc-600"><p className="text-sm">Nenhuma série encontrada</p></div>
         ):(
           <div className="grid grid-cols-3 sm:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-3.5 sm:gap-4 p-1">
             {filtered.slice(0,120).map((item)=>(
@@ -125,8 +125,8 @@ export default function SeriesPage() {
                   <svg viewBox="0 0 24 24" className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth={1.8}><rect x="2" y="2" width="20" height="20" rx="2"/><path d="M7 2v20M17 2v20M2 12h20"/></svg>
                 </div>
                 <div className="flex-1 min-w-0">
-                  <p className="text-sm font-medium">Todas as sÃ©ries</p>
-                  <p className={`text-xs ${genre==="all"?"text-white/60":"text-zinc-600"}`}>{items.length} sÃ©ries</p>
+                  <p className="text-sm font-medium">Todas as séries</p>
+                  <p className={`text-xs ${genre==="all"?"text-white/60":"text-zinc-600"}`}>{items.length} séries</p>
                 </div>
                 {genre==="all"&&<div className="w-1.5 h-6 bg-white/40 rounded-full"/>}
               </button>
@@ -152,4 +152,5 @@ export default function SeriesPage() {
     </div>
   );
 }
+
 
