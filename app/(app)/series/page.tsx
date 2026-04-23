@@ -48,10 +48,7 @@ export default function SeriesPage() {
   const filtered = items.filter(m => {
   const s = getSettings();
   if (s.hiddenCats.find((h: {id:string}) => h.id === m.category_id)) return false;
-  
-  // CORREÇÃO: usar == em vez de === para tipos diferentes
   if (genre !== "all" && genre != m.category_id) return false;
-  
   return m.name.toLowerCase().includes(search.toLowerCase());
 });
 
@@ -82,7 +79,7 @@ export default function SeriesPage() {
       <div className="flex-1 overflow-y-auto px-6 pb-6 overflow-x-hidden">
         {loading?(
           <div className="grid grid-cols-3 sm:grid-cols-4 lg:grid-cols-5 gap-3">
-            {[...Array(10)].map((_,i)=><div key={i} className="rounded-xl aspect-[2/3] bg-cover bg-center"/>)}
+            {[...Array(10)].map((_,i)=><div key={i} className="rounded-xl aspect-[2/3] bg-zinc-900 animate-pulse"/>)}
           </div>
         ):filtered.length===0?(
           <div className="flex items-center justify-center h-full text-zinc-600"><p className="text-sm">Nenhuma série encontrada</p></div>
@@ -91,7 +88,7 @@ export default function SeriesPage() {
             {filtered.slice(0,120).map((item)=>(
               <div key={item.series_id} onClick={()=>{ if(creds) window.location.href=`/series/${item.series_id}?dns=${encodeURIComponent(creds.dns)}&username=${creds.user}&password=${creds.pass}&name=${encodeURIComponent(item.name)}`; }}
                 tabIndex={0} className="cursor-pointer group">
-                <div className="rounded-xl aspect-[2/3] bg-cover bg-center">
+                <div className="rounded-xl aspect-[2/3] flex flex-col items-center justify-center mb-2 border border-zinc-800 group-hover:border-zinc-500 transition-all group-hover:scale-[1.015] relative overflow-hidden bg-zinc-900">
                   {item.cover
                     ?<img src={proxyUrl(item.cover)} alt={item.name} className="w-full h-full object-cover" onError={e=>{(e.target as HTMLImageElement).style.display="none"}}/>
                     :<svg viewBox="0 0 24 24" className="w-8 h-8 text-zinc-700" fill="none" stroke="currentColor" strokeWidth={1.5}><rect x="2" y="7" width="20" height="15" rx="2"/><path d="M16 3l-4 4-4-4"/></svg>}
@@ -156,7 +153,4 @@ export default function SeriesPage() {
     </div>
   );
 }
-
-
-
 
