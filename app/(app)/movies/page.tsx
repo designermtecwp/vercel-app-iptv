@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 import { fetchXtream } from "@/lib/fetch-proxy";
 import { getSettings } from "@/lib/settings";
 import { useState, useEffect, useRef } from "react";
@@ -34,7 +34,7 @@ export default function MoviesPage() {
       const c = {dns,user,pass};
       setCreds(c);
       credsRef.current = c;
-      // Só carrega categorias — leve
+      // SÃ³ carrega categorias â€” leve
       fetchXtream(`${dns}/player_api.php?username=${user}&password=${pass}&action=get_vod_categories`)
         .then(cats => {
           const list = Array.isArray(cats) ? cats : [];
@@ -197,3 +197,4 @@ export default function MoviesPage() {
     </div>
   );
 }
+
