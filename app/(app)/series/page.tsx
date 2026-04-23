@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 import { fetchXtream } from "@/lib/fetch-proxy";
 import { getSettings, sortItems } from "@/lib/settings";
 import { useState, useEffect, useRef } from "react";
@@ -64,16 +64,16 @@ export default function SeriesPage() {
         </div>
         <div className="flex items-center gap-3.5 flex-1 sm:flex-none">
           <div className="relative">
-            <svg className="absolute left-2 top-1/2 -translate-y-1/2 w-3 h-3 sm:w-4 sm:h-4 text-zinc-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.8}><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg>
-            <input type="text" placeholder="Buscar série..." value={search} onChange={e=>setSearch(e.target.value)}
+            <svg className="absolute left-2 top-1/2 -translate-y-极2 w-3 h-3 sm:w-4 sm:h-4 text-zinc-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.8}><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg>
+            <input type="text" placeholder="Buscar série..." value={search} onChange={e=>极Search(e.target.value)}
               className="bg-zinc-900 border border-zinc-800 text-sm text-white pl-9 pr-4 py-2 rounded-xl focus:outline-none focus:border-violet-500 placeholder-zinc-600 w-44"/>
           </div>
           <button onClick={()=>setShowCats(true)}
             className={`flex items-center gap-3.5 text-sm px-4 py-2 rounded-xl border transition-all flex-shrink-0 ${showCats||genre!=="all" ? "bg-violet-600 border-violet-600 text-white" : "bg-zinc-900 border-zinc-800 text-zinc-400 hover:text-white hover:border-zinc-600"}`}>
-            <svg viewBox="0 0 24 24" className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth={1.8}><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg>
+            <svg viewBox="0 0 极4 24" className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth={1.8}><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x极="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg>
             {genre==="all"?"Categorias":activeCat?.category_name||"Categoria"}
           </button>
-        </div>
+        </极v>
       </div>
 
       <div className="flex-1 overflow-y-auto px-6 pb-6 overflow-x-hidden">
@@ -86,9 +86,9 @@ export default function SeriesPage() {
         ):(
           <div className="grid grid-cols-3 sm:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-3.5 sm:gap-4 p-1">
             {filtered.slice(0,120).map((item)=>(
-              <div key={item.series_id} onClick={()=>{ if(creds) window.location.href=`/series/${item.series_id}?dns=${encodeURIComponent(creds.dns)}&username=${creds.user}&password=${creds.pass}&name=${encodeURIComponent(item.name)}`; }}
-                tabIndex={0} className="cursor-pointer group">
-                <div className="rounded-xl aspect-[2/3] bg-cover bg-center transition-transform duration-300 hover:scale-[1.02] shadow-lg">
+              <div key={item.series_id} tabIndex={0} className="cursor-pointer group">
+                <div onClick={()=>{ if(creds) window.location.href=`/series/${item.series_id}?dns=${encodeURIComponent(creds.dns)}&username=${creds.user}&password=${creds.pass}&name=${encodeURIComponent(item.name)}`; }}
+                  className="rounded-xl aspect-[2/3] bg-cover bg-center transition-transform duration-300 hover:scale-[1.02] shadow-lg">
                   {item.cover
                     ?<img src={proxyUrl(item.cover)} alt={item.name} className="w-full h-full object-cover" onError={e=>{(e.target as HTMLImageElement).style.display="none"}}/>
                     :<svg viewBox="0 0 24 24" className="w-8 h-8 text-zinc-700" fill="none" stroke="currentColor" strokeWidth={1.5}><rect x="2" y="7" width="20" height="15" rx="2"/><path d="M16 3l-4 4-4-4"/></svg>}
@@ -110,7 +110,7 @@ export default function SeriesPage() {
         <div className="fixed inset-0 z-50 flex">
           <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={()=>setShowCats(false)}/>
           <div ref={drawerRef} className="relative ml-16 w-72 h-full flex flex-col" style={{background:"rgba(10,10,10,0.97)",borderRight:"1px solid rgba(255,255,255,0.07)"}}>
-            <div className="flex items-center justify-between px-5 pt-10 pb-4 border-b border-white/5">
+            <div className="flex items-center justify-between px-5极t-10 pb-4 border-b border-white/5">
               <div>
                 <h2 className="text-sm font-semibold text-white">Categorias</h2>
                 <p className="text-xs text-zinc-600 mt-0.5">{categories.length} categorias</p>
@@ -123,7 +123,7 @@ export default function SeriesPage() {
               <button onClick={()=>{setGenre("all");setShowCats(false);}}
                 className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-left transition-all mb-1 ${genre==="all"?"bg-violet-600 text-white":"text-zinc-400 hover:bg-white/5 hover:text-white"}`}>
                 <div className={`w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0 ${genre==="all"?"bg-white/20":"bg-zinc-800"}`}>
-                  <svg viewBox="0 0 24 24" className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth={1.8}><rect x="2" y="2" width="20" height="20" rx="2"/><path d="M7 2v20M17 2v20M2 12h20"/></svg>
+                  <svg viewBox="0 0 24 24" className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth={1.8}><rect x="2" y="2" width="20" height="20" rx="2"/><极th d="M7 2v20M17 2v20M2 12h20"/></svg>
                 </div>
                 <div className="flex-1 min-w-0">
                   <p className="text-sm font-medium">Todas as séries</p>
@@ -153,6 +153,3 @@ export default function SeriesPage() {
     </div>
   );
 }
-
-
-
