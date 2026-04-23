@@ -46,11 +46,10 @@ export default function SeriesPage() {
   }, [showCats]);
 
   const filtered = items.filter(m => {
-  const s = getSettings();
-  if (s.hiddenCats.find((h: {id:string}) => h.id === m.category_id)) return false;
-  if (genre !== "all" && genre != m.category_id) return false;
-  return m.name.toLowerCase().includes(search.toLowerCase());
-});
+    const s = getSettings();
+    if (s.hiddenCats.find((h: {id:string}) => h.id === m.category_id)) return false;
+    return m.name.toLowerCase().includes(search.toLowerCase());
+  });
 
   const activeCat = categories.find(c=>c.category_id===genre);
   const dotColors = ["#7c3aed","#3b82f6","#f59e0b","#ef4444","#10b981","#6366f1","#ec4899","#f97316"];
@@ -59,7 +58,7 @@ export default function SeriesPage() {
     <div className="h-screen flex flex-col overflow-hidden">
       <div className="flex items-center justify-between px-4 pt-4 pb-3 sm:px-6 sm:pt-8 flex-shrink-0">
         <div className="hidden sm:flex items-center gap-3">
-          <h1 className="text-xl font-semibold text-white">Séries</h1>
+          <h1 className="text-xl font-semibold text-white">séries</h1>
           {filtered.length>0&&<span className="text-xs text-white/60 bg-white/10 px-2 py-0.5 rounded-full border border-white/20">{filtered.length}</span>}
         </div>
         <div className="flex items-center gap-3.5 flex-1 sm:flex-none">
@@ -126,8 +125,8 @@ export default function SeriesPage() {
                   <svg viewBox="0 0 24 24" className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth={1.8}><rect x="2" y="2" width="20" height="20" rx="2"/><path d="M7 2v20M17 2v20M2 12h20"/></svg>
                 </div>
                 <div className="flex-1 min-w-0">
-                  <p className="text-sm font-medium">Todas as Séries</p>
-                  <p className={`text-xs ${genre==="all"?"text-white/60":"text-zinc-600"}`}>{items.length} Séries</p>
+                  <p className="text-sm font-medium">Todas as séries</p>
+                  <p className={`text-xs ${genre==="all"?"text-white/60":"text-zinc-600"}`}>{items.length} séries</p>
                 </div>
                 {genre==="all"&&<div className="w-1.5 h-6 bg-white/40 rounded-full"/>}
               </button>
@@ -153,4 +152,6 @@ export default function SeriesPage() {
     </div>
   );
 }
+
+
 
