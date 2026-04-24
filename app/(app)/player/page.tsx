@@ -219,6 +219,7 @@ function PlayerContent() {
   }
 
   const loadStream = useCallback(async (url: string) => {
+    console.log('[PLAYER] loadStream url:', url);
     const video = videoRef.current;
     if (!video) return;
     hlsRef.current?.destroy();
@@ -229,7 +230,7 @@ function PlayerContent() {
     const needsRewrite = isLive && url.startsWith("http://");
     const effectiveUrl = needsRewrite ? `/api/stream?url=${encodeURIComponent(url)}` : url;
 
-    const tryPlay = () => video.play().then(() => setPlaying(true)).catch(() => {});
+    const tryPlay = () => video.play().then(() => { console.log('[PLAYER] playing OK'); setPlaying(true); }).catch((e) => { console.error('[PLAYER] play failed:', e); setStreamError('Erro ao reproduzir: ' + e.message); });
 
     if (effectiveUrl.includes(".m3u8") || effectiveUrl.includes("/api/stream") || isLive) {
       try {
