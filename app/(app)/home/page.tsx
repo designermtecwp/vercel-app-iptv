@@ -93,7 +93,7 @@ function ScrollRow({ children, label, linkHref, linkText, count }: {
         )}
       </div>
       <div className="relative">
-        <div ref={ref} className="flex gap-[14px] overflow-x-auto home-row-scroll px-5 sm:px-6 pb-2" style={{scrollbarWidth:"none",msOverflowStyle:"none"}}>
+        <div ref={ref} className="flex gap-[14px] overflow-x-auto home-row-scroll px-5 sm:px-6" style={{scrollbarWidth:"none",msOverflowStyle:"none",overflowY:"visible",paddingTop:"6px",paddingBottom:"10px"}}>
           {children}
         </div>
         <div className="hidden md:block absolute left-0 top-0 bottom-0 w-10 pointer-events-none z-10 transition-opacity duration-300"
@@ -241,7 +241,7 @@ function HeroSlider({ items, creds }: { items:(VodItem|SeriesItem)[]; creds:{dns
   }
 
   const isVod = "stream_id" in cur;
-  const imgSrc = isVod ? (cur as VodItem).stream_icon : (cur as SeriesItem).cover;
+  const imgSrc = proxyUrl(isVod ? (cur as VodItem).stream_icon : (cur as SeriesItem).cover);
   const title = cur.name;
 
   function handlePlay() {

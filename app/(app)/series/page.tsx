@@ -83,7 +83,7 @@ export default function SeriesPage() {
         ):filtered.length===0?(
           <div className="flex items-center justify-center h-full text-zinc-600"><p className="text-sm">Nenhuma série encontrada</p></div>
         ):(
-          <div className="grid grid-cols-3 sm:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-3.5 sm:gap-4 p-1">
+          <div className="grid grid-cols-3 sm:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-3.5">
             {filtered.slice(0,120).map((item)=>(
               <div key={item.series_id} onClick={()=>{ if(creds) window.location.href=`/series/${item.series_id}?dns=${encodeURIComponent(creds.dns)}&username=${creds.user}&password=${creds.pass}&name=${encodeURIComponent(item.name)}`; }}
                 tabIndex={0} className="cursor-pointer group">

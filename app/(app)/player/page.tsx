@@ -63,6 +63,7 @@ function PlayerContent() {
   const seriesId = params.get("series_id");
   const nextEpId = params.get("next_ep_id");
   const nextEpTitle = params.get("next_ep_title");
+  const nextEpExt = params.get("next_ep_ext") || "mp4";
   const isLive = type === "live" && !!streamId;
   const isSeries = type === "series";
 
@@ -74,10 +75,18 @@ function PlayerContent() {
 
   const favId = `${type}-${streamId}`;
 
+  // URL do stream — cada tipo usa endpoint diferente no Xtream:
+  //   live   → /live/user/pass/{id}.m3u8
+  //   vod    → /movie/user/pass/{id}.mp4
+  //   series → /series/user/pass/{ep_id}.mp4  (extensão do episódio; .mkv/.ts também comuns)
+  // Pegamos ext do parâmetro opcional; default 'mp4' cobre 95% dos casos.
+  const epExt = params.get("ext") || "mp4";
   const streamUrl = streamId && dns && username && password
     ? isLive
       ? `${dns}/live/${username}/${password}/${streamId}.m3u8`
-      : `${dns}/movie/${username}/${password}/${streamId}.mp4`
+      : isSeries
+        ? `${dns}/series/${username}/${password}/${streamId}.${epExt}`
+        : `${dns}/movie/${username}/${password}/${streamId}.${epExt}`
     : null;
 
   useEffect(() => {
@@ -283,6 +292,7 @@ function PlayerContent() {
             stream: nextEpId, dns: dns||"", username: username||"", password: password||"",
             name: nextEpTitle||"Episódio", type: "series",
             series_id: seriesId||"", series_name: params.get("series_name")||"",
+            ext: nextEpExt,
           });
           window.location.href = `/player?${nextUrl.toString()}`;
           return null;
@@ -415,14 +425,10 @@ function PlayerContent() {
       if (m) { m.style.paddingBottom = ""; m.style.overflow = ""; }
     };
   }, []);
-  // Auto fullscreen no desktop apenas para live e series
-  useEffect(() => {
-    const isMobile = /Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
-    if (!isMobile && (type === "live" || type === "series")) {
-      const timer = setTimeout(() => enterFullscreen(), 500);
-      return () => clearTimeout(timer);
-    }
-  }, []);
+  // Auto fullscreen removido — estava causando confusão no desktop
+  // (requestFullscreen precisa de interação do usuário em muitos browsers,
+  // e quando falha silenciosamente o player parece travado).
+  // O usuário clica no botão de fullscreen quando quiser.
 
   useEffect(() => {
     function onFsChange() {
@@ -575,7 +581,7 @@ function PlayerContent() {
                 <span className="text-xs text-zinc-400 w-4">{countdown}s</span>
               </div>
               <div className="flex gap-2 mt-3">
-                <button onClick={()=>{ if(countdownRef.current) window.clearInterval(countdownRef.current); setCountdown(null); window.location.href = `/player?${new URLSearchParams({stream:nextEpId!,dns:dns||"",username:username||"",password:password||"",name:nextEpTitle||"",type:"series",series_id:seriesId||"",series_name:params.get("series_name")||""}).toString()}`; }}
+                <button onClick={()=>{ if(countdownRef.current) window.clearInterval(countdownRef.current); setCountdown(null); window.location.href = `/player?${new URLSearchParams({stream:nextEpId!,dns:dns||"",username:username||"",password:password||"",name:nextEpTitle||"",type:"series",series_id:seriesId||"",series_name:params.get("series_name")||"",ext:nextEpExt}).toString()}`; }}
                   className="flex-1 bg-violet-600 text-white text-xs font-medium py-2 rounded-lg hover:bg-violet-500 transition-colors">
                   Assistir agora
                 </button>

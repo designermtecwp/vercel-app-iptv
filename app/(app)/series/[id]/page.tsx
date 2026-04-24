@@ -5,7 +5,7 @@ import { useParams, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { addFavorite, removeFavorite, isFavorite } from "@/lib/favorites";
 
-interface Episode { id:number; title:string; episode_num:number; season:number; info?:{plot?:string;duration_secs?:number}; }
+interface Episode { id:number; title:string; episode_num:number; season:number; container_extension?:string; info?:{plot?:string;duration_secs?:number;movie_image?:string}; }
 interface SeriesInfo {
   info: {
     name?:string; plot?:string; cast?:string; director?:string;
@@ -94,10 +94,12 @@ function SeriesDetail() {
       series_id: String(id),
       series_name: title,
       icon: info?.info?.cover || "",
+      ext: ep.container_extension || "mp4",
     });
     if (nextEp) {
       p.set("next_ep_id", String(nextEp.id));
       p.set("next_ep_title", nextEp.title || `Ep ${nextEp.episode_num}`);
+      p.set("next_ep_ext", nextEp.container_extension || "mp4");
     }
     window.location.href = `/player?${p.toString()}`;
   }
