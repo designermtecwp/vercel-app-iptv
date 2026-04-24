@@ -223,9 +223,15 @@ function PlayerContent() {
     hlsRef.current?.destroy();
     hlsRef.current = null;
 
+    // Se o servidor IPTV usa http:// e o app está em https://, rota pelo proxy
+    // para evitar bloqueio de Mixed Content no browser
+    const effectiveUrl = url.startsWith("http://")
+      ? `/api/stream?url=${encodeURIComponent(url)}`
+      : url;
+
     const tryPlay = () => video.play().then(() => setPlaying(true)).catch(() => {});
 
-    if (url.includes(".m3u8") || isLive) {
+    if (effectiveUrl.includes(".m3u8") || effectiveUrl.includes("/api/stream") || isLive) {
       try {
         const HlsMod = await import("hls.js");
         const Hls = HlsMod.default || HlsMod;
@@ -246,13 +252,13 @@ function PlayerContent() {
               xhr.withCredentials = false;
             },
           });
-          hls.loadSource(url);
+          hls.loadSource(effectiveUrl);
           hls.attachMedia(video);
           hls.on(Hls.Events.MANIFEST_PARSED, () => tryPlay());
           hls.on(Hls.Events.ERROR, (_: unknown, d: {fatal?: boolean; type?: string}) => {
             if (d.fatal) {
               hls.destroy();
-              video.src = url;
+              video.src = effectiveUrl;
               tryPlay();
             }
           });
@@ -263,10 +269,10 @@ function PlayerContent() {
         console.warn("HLS.js failed, fallback to native", e);
       }
       // Fallback nativo (Safari / TV / alguns WebViews)
-      video.src = url;
+      video.src = effectiveUrl;
       tryPlay();
     } else {
-      video.src = url;
+      video.src = effectiveUrl;
       tryPlay();
     }
   }, [isLive]);

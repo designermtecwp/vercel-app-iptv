@@ -3,7 +3,7 @@ import { fetchXtream } from "@/lib/fetch-proxy";
 import { getSettings } from "@/lib/settings";
 import { useState, useEffect, useRef } from "react";
 
-interface VodStream { stream_id:number; name:string; stream_icon:string; category_id:string; }
+interface VodStream { stream_id:number; name:string; stream_icon:string; category_id:string; rating?:string; }
 interface Category { category_id:string; category_name:string; }
 
 const catCache = new Map<string, VodStream[]>();
@@ -103,7 +103,7 @@ export default function MoviesPage() {
   return (
     <div className="h-screen flex flex-col overflow-hidden">
       {/* Header */}
-      <div className="flex items-center justify-between px-4 pt-4 pb-3 sm:px-6 sm:pt-8 flex-shrink-0">
+      <div className="flex items-center justify-between px-4 pt-3 pb-2 sm:px-6 sm:pt-5 flex-shrink-0">
         <div className="hidden sm:flex items-center gap-3">
           <h1 className="text-xl font-semibold text-white">Filmes</h1>
           {!loadingCat && items.length > 0 && (
@@ -127,7 +127,7 @@ export default function MoviesPage() {
       {/* Grid */}
       <div className="flex-1 overflow-y-auto px-4 sm:px-6 pb-6">
         {loading || loadingCat ? (
-          <div className="grid grid-cols-3 sm:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-3.5">
+          <div className="grid grid-cols-3 sm:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-3.5 pt-2">
             {[...Array(18)].map((_,i) => <div key={i} className="rounded-xl aspect-[2/3] bg-zinc-900 animate-pulse"/>)}
           </div>
         ) : filtered.length === 0 ? (
@@ -135,7 +135,7 @@ export default function MoviesPage() {
             <p className="text-sm">Nenhum filme encontrado</p>
           </div>
         ) : (
-          <div className="grid grid-cols-3 sm:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-3.5">
+          <div className="grid grid-cols-3 sm:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-3.5 pt-2">
             {filtered.slice(0, 120).map((item,i) => (
               <div key={item.stream_id}
                 onClick={()=>{ if(creds) window.location.href=`/movie/${item.stream_id}?dns=${encodeURIComponent(creds.dns)}&username=${creds.user}&password=${creds.pass}&name=${encodeURIComponent(item.name)}&icon=${encodeURIComponent(item.stream_icon||"")}`; }}
@@ -149,6 +149,13 @@ export default function MoviesPage() {
                         <svg viewBox="0 0 24 24" className="w-6 h-6" fill={accents[i%8]}><path d="M8 5v14l11-7z"/></svg>
                       </div>
                   }
+                  {item.rating && parseFloat(item.rating) > 0 && (
+                    <div className="absolute top-1.5 left-1.5 flex items-center gap-0.5 px-1.5 py-0.5 rounded-md text-[10px] font-bold"
+                      style={{background:"rgba(0,0,0,0.72)",backdropFilter:"blur(4px)",color:"#facc15"}}>
+                      <svg viewBox="0 0 24 24" className="w-2.5 h-2.5 fill-current"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+                      {parseFloat(item.rating).toFixed(1)}
+                    </div>
+                  )}
                   <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center bg-black/50">
                     <div className="w-9 h-9 rounded-full bg-white/90 flex items-center justify-center">
                       <svg viewBox="0 0 24 24" className="w-4 h-4" fill="#000"><path d="M8 5v14l11-7z"/></svg>

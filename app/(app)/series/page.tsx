@@ -3,7 +3,7 @@ import { fetchXtream } from "@/lib/fetch-proxy";
 import { getSettings, sortItems } from "@/lib/settings";
 import { useState, useEffect, useRef } from "react";
 
-interface Serie { series_id:number; name:string; cover:string; category_id:string; }
+interface Serie { series_id:number; name:string; cover:string; category_id:string; rating?:string; }
 interface Category { category_id:string; category_name:string; }
 
 
@@ -56,7 +56,7 @@ export default function SeriesPage() {
 
   return (
     <div className="h-screen flex flex-col overflow-hidden">
-      <div className="flex items-center justify-between px-4 pt-4 pb-3 sm:px-6 sm:pt-8 flex-shrink-0">
+      <div className="flex items-center justify-between px-4 pt-3 pb-2 sm:px-6 sm:pt-5 flex-shrink-0">
         <div className="hidden sm:flex items-center gap-3">
           <h1 className="text-xl font-semibold text-white">Séries</h1>
           {filtered.length>0&&<span className="text-xs text-white/60 bg-white/10 px-2 py-0.5 rounded-full border border-white/20">{filtered.length}</span>}
@@ -75,7 +75,7 @@ export default function SeriesPage() {
         </div>
       </div>
 
-      <div className="flex-1 overflow-y-auto px-6 pb-6 overflow-x-hidden">
+      <div className="flex-1 overflow-y-auto px-4 sm:px-6 pb-6">
         {loading?(
           <div className="grid grid-cols-3 sm:grid-cols-4 lg:grid-cols-5 gap-3">
             {[...Array(10)].map((_,i)=><div key={i} className="rounded-xl aspect-[2/3] bg-zinc-900 animate-pulse"/>)}
@@ -83,7 +83,7 @@ export default function SeriesPage() {
         ):filtered.length===0?(
           <div className="flex items-center justify-center h-full text-zinc-600"><p className="text-sm">Nenhuma série encontrada</p></div>
         ):(
-          <div className="grid grid-cols-3 sm:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-3.5">
+          <div className="grid grid-cols-3 sm:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-3.5 pt-2">
             {filtered.slice(0,120).map((item)=>(
               <div key={item.series_id} onClick={()=>{ if(creds) window.location.href=`/series/${item.series_id}?dns=${encodeURIComponent(creds.dns)}&username=${creds.user}&password=${creds.pass}&name=${encodeURIComponent(item.name)}`; }}
                 tabIndex={0} className="cursor-pointer group">
@@ -91,6 +91,13 @@ export default function SeriesPage() {
                   {item.cover
                     ?<img src={proxyUrl(item.cover)} alt={item.name} className="w-full h-full object-cover" onError={e=>{(e.target as HTMLImageElement).style.display="none"}}/>
                     :<svg viewBox="0 0 24 24" className="w-8 h-8 text-zinc-700" fill="none" stroke="currentColor" strokeWidth={1.5}><rect x="2" y="7" width="20" height="15" rx="2"/><path d="M16 3l-4 4-4-4"/></svg>}
+                  {item.rating && parseFloat(item.rating) > 0 && (
+                    <div className="absolute top-1.5 left-1.5 flex items-center gap-0.5 px-1.5 py-0.5 rounded-md text-[10px] font-bold"
+                      style={{background:"rgba(0,0,0,0.72)",backdropFilter:"blur(4px)",color:"#facc15"}}>
+                      <svg viewBox="0 0 24 24" className="w-2.5 h-2.5 fill-current"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+                      {parseFloat(item.rating).toFixed(1)}
+                    </div>
+                  )}
                   <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center bg-black/60">
                     <div className="w-11 h-11 rounded-full bg-white/90 flex items-center justify-center shadow-xl">
                       <svg viewBox="0 0 24 24" className="w-5 h-5" fill="#000"><path d="M8 5v14l11-7z"/></svg>
