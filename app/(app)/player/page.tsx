@@ -231,7 +231,11 @@ function PlayerContent() {
         .catch(() => {});
     };
 
-    if (url.includes(".m3u8") || isLive) {
+    // Para canais ao vivo: sempre passar pelo proxy que reescreve http->https nos segmentos
+    const liveUrl = isLive ? `/api/stream?url=${encodeURIComponent(url)}` : url;
+    const finalUrl = liveUrl;
+
+    if (finalUrl.includes(".m3u8") || finalUrl.includes("/api/stream")) {
       try {
         const HlsMod = await import("hls.js");
         const Hls = HlsMod.default || HlsMod;
@@ -250,7 +254,7 @@ function PlayerContent() {
             fragLoadingMaxRetry: 6,
             xhrSetup: (xhr: XMLHttpRequest) => { xhr.withCredentials = false; },
           });
-          hls.loadSource(url);
+          hls.loadSource(finalUrl);
           hls.attachMedia(video);
           hls.on(Hls.Events.MANIFEST_PARSED, () => tryPlay());
           hls.on(Hls.Events.ERROR, (_: unknown, d: {fatal?: boolean}) => {
@@ -260,10 +264,10 @@ function PlayerContent() {
           return;
         }
       } catch {}
-      video.src = url;
+      video.src = finalUrl;
       tryPlay();
     } else {
-      video.src = url;
+      video.src = finalUrl;
       tryPlay();
     }
   }, [isLive]);
