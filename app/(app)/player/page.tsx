@@ -227,12 +227,11 @@ function PlayerContent() {
 
     // Proxy apenas para canais ao vivo em http:// (evita Mixed Content)
     // Filmes e séries (.mp4/.mkv) vão direto — proxy HLS não suporta vídeo progressivo
-    const needsRewrite = isLive && url.startsWith("http://");
-    const effectiveUrl = needsRewrite ? `/api/stream?url=${encodeURIComponent(url)}` : url;
+    const effectiveUrl = isLive ? `/api/stream?url=${encodeURIComponent(url)}` : url;
 
     const tryPlay = () => video.play().then(() => { console.log('[PLAYER] playing OK'); setPlaying(true); }).catch((e) => { console.error('[PLAYER] play failed:', e); setStreamError('Erro ao reproduzir: ' + e.message); });
 
-    if (effectiveUrl.includes(".m3u8") || effectiveUrl.includes("/api/stream") || isLive) {
+    if (effectiveUrl.includes(".m3u8") || effectiveUrl.includes("/api/stream")) {
       try {
         const HlsMod = await import("hls.js");
         const Hls = HlsMod.default || HlsMod;
