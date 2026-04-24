@@ -50,7 +50,6 @@ function PlayerContent() {
   const [savedTime, setSavedTime] = useState(0);
   const [vodItems, setVodItems] = useState<{stream_id:number;name:string;stream_icon:string;category_id:string}[]>([]);
   const [seriesEps, setSeriesEps] = useState<{id:number;title:string;episode_num:number;season:number}[]>([]);
-  const [streamError, setStreamError] = useState<string|null>(null);
   const hideTimer = useRef<number | null>(null);
   const countdownRef = useRef<number | null>(null);
 
@@ -219,37 +218,19 @@ function PlayerContent() {
   }
 
   const loadStream = useCallback(async (url: string) => {
-    console.log('[PLAYER] loadStream url:', url);
     const video = videoRef.current;
     if (!video) return;
     hlsRef.current?.destroy();
     hlsRef.current = null;
 
-    // Proxy apenas para canais ao vivo em http:// (evita Mixed Content)
-    // Filmes e séries (.mp4/.mkv) vão direto — proxy HLS não suporta vídeo progressivo
-    const effectiveUrl = isLive ? `/api/stream?url=${encodeURIComponent(url)}` : url;
-
     const tryPlay = () => {
-      video.muted = false;
-      const p = video.play();
-      if (p !== undefined) {
-        p.then(() => { console.log('[PLAYER] playing OK'); setPlaying(true); })
-        .catch(() => {
-          // Autoplay bloqueado — tentar com mute primeiro
-          video.muted = true;
-          video.play().then(() => {
-            setPlaying(true);
-            // Desmutar apos iniciar
-            setTimeout(() => { video.muted = false; }, 500);
-          }).catch((e2) => {
-            console.error('[PLAYER] play failed muted:', e2);
-            setStreamError('Clique em qualquer lugar para reproduzir');
-          });
-        });
-      }
+      video.muted = true;
+      video.play()
+        .then(() => { setPlaying(true); setTimeout(() => { video.muted = false; }, 300); })
+        .catch(() => {});
     };
 
-    if (effectiveUrl.includes(".m3u8") || effectiveUrl.includes("/api/stream")) {
+    if (url.includes(".m3u8") || isLive) {
       try {
         const HlsMod = await import("hls.js");
         const Hls = HlsMod.default || HlsMod;
@@ -260,41 +241,28 @@ function PlayerContent() {
             liveMaxLatencyDurationCount: 10,
             maxBufferLength: 30,
             maxMaxBufferLength: 60,
-            manifestLoadingTimeOut: 15000,
-            manifestLoadingMaxRetry: 5,
-            levelLoadingTimeOut: 15000,
-            levelLoadingMaxRetry: 5,
+            manifestLoadingTimeOut: 20000,
+            manifestLoadingMaxRetry: 3,
+            levelLoadingTimeOut: 20000,
+            levelLoadingMaxRetry: 3,
             fragLoadingTimeOut: 30000,
-            fragLoadingMaxRetry: 8,
-            xhrSetup: (xhr: XMLHttpRequest) => {
-              xhr.withCredentials = false;
-            },
+            fragLoadingMaxRetry: 6,
+            xhrSetup: (xhr: XMLHttpRequest) => { xhr.withCredentials = false; },
           });
-          hls.loadSource(effectiveUrl);
+          hls.loadSource(url);
           hls.attachMedia(video);
           hls.on(Hls.Events.MANIFEST_PARSED, () => tryPlay());
-          hls.on(Hls.Events.ERROR, (_: unknown, d: {fatal?: boolean; type?: string}) => {
-            if (d.fatal) {
-              hls.destroy();
-              if (video.canPlayType("application/vnd.apple.mpegurl")) {
-                video.src = effectiveUrl;
-                tryPlay();
-              } else {
-                setStreamError("Nao foi possivel carregar o canal.");
-              }
-            }
+          hls.on(Hls.Events.ERROR, (_: unknown, d: {fatal?: boolean}) => {
+            if (d.fatal) { hls.destroy(); video.src = url; tryPlay(); }
           });
           hlsRef.current = hls;
           return;
         }
-      } catch (e) {
-        console.warn("HLS.js failed, fallback to native", e);
-      }
-      // Fallback nativo (Safari / TV / alguns WebViews)
-      video.src = effectiveUrl;
+      } catch {}
+      video.src = url;
       tryPlay();
     } else {
-      video.src = effectiveUrl;
+      video.src = url;
       tryPlay();
     }
   }, [isLive]);
@@ -544,7 +512,7 @@ function PlayerContent() {
           onPlay={()=>{setPlaying(true); if(hideTimer.current) window.clearTimeout(hideTimer.current); setShowControls(false); saveProgress();}} onPause={()=>{setPlaying(false); setShowControls(true);}}
           onLoadedMetadata={()=>checkSavedProgress()}
           onEnded={handleVideoEnded}
-          onClick={togglePlay} playsInline/>
+          onClick={togglePlay} playsInline autoPlay muted/>
 
         {/* Ícone pause no centro */}
         {!playing && !showContinue && (
@@ -566,7 +534,18 @@ function PlayerContent() {
             </div>
           </div>
         )}
-        {streamError && (<div style={{position:"absolute",inset:0,display:"flex",alignItems:"center",justifyContent:"center",flexDirection:"column",gap:"16px",zIndex:25,background:"rgba(0,0,0,0.75)"}}><p style={{color:"white",fontSize:"14px"}}>{streamError}</p><button onClick={()=>{setStreamError(null);if(streamUrl)loadStream(streamUrl);}} style={{background:"#7c3aed",color:"#fff",border:"none",borderRadius:"8px",padding:"10px 24px",cursor:"pointer"}}>Tentar novamente</button></div>)}
+        {/* Erro de stream */}
+        {streamError && (
+          <div style={{position:"absolute",inset:0,display:"flex",alignItems:"center",justifyContent:"center",flexDirection:"column",gap:"16px",zIndex:25,background:"rgba(0,0,0,0.75)"}}>
+            <svg viewBox="0 0 24 24" style={{width:"40px",height:"40px",color:"#ef4444"}} fill="none" stroke="currentColor" strokeWidth={1.5}><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+            <p style={{color:"rgba(255,255,255,0.8)",fontSize:"14px",textAlign:"center",maxWidth:"280px",lineHeight:1.5}}>{streamError}</p>
+            <button onClick={()=>{setStreamError(null);if(streamUrl)loadStream(streamUrl);}}
+              style={{background:"#7c3aed",color:"#fff",border:"none",borderRadius:"8px",padding:"10px 24px",fontSize:"13px",fontWeight:600,cursor:"pointer"}}>
+              Tentar novamente
+            </button>
+          </div>
+        )}
+
         {/* Modal continuar assistindo */}
         {showContinue && !isLive && (
           <div className="absolute inset-0 flex items-center justify-center z-30 bg-black/60">
