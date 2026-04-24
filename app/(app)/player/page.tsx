@@ -50,6 +50,7 @@ function PlayerContent() {
   const [savedTime, setSavedTime] = useState(0);
   const [vodItems, setVodItems] = useState<{stream_id:number;name:string;stream_icon:string;category_id:string}[]>([]);
   const [seriesEps, setSeriesEps] = useState<{id:number;title:string;episode_num:number;season:number}[]>([]);
+  const [streamError, setStreamError] = useState<string|null>(null);
   const hideTimer = useRef<number | null>(null);
   const countdownRef = useRef<number | null>(null);
 
@@ -256,8 +257,12 @@ function PlayerContent() {
           hls.on(Hls.Events.ERROR, (_: unknown, d: {fatal?: boolean; type?: string}) => {
             if (d.fatal) {
               hls.destroy();
-              video.src = effectiveUrl;
-              tryPlay();
+              if (video.canPlayType("application/vnd.apple.mpegurl")) {
+                video.src = effectiveUrl;
+                tryPlay();
+              } else {
+                setStreamError("Nao foi possivel carregar o canal.");
+              }
             }
           });
           hlsRef.current = hls;
@@ -542,6 +547,7 @@ function PlayerContent() {
             </div>
           </div>
         )}
+        {streamError && (<div style={{position:"absolute",inset:0,display:"flex",alignItems:"center",justifyContent:"center",flexDirection:"column",gap:"16px",zIndex:25,background:"rgba(0,0,0,0.75)"}}><p style={{color:"white",fontSize:"14px"}}>{streamError}</p><button onClick={()=>{setStreamError(null);if(streamUrl)loadStream(streamUrl);}} style={{background:"#7c3aed",color:"#fff",border:"none",borderRadius:"8px",padding:"10px 24px",cursor:"pointer"}}>Tentar novamente</button></div>)}
         {/* Modal continuar assistindo */}
         {showContinue && !isLive && (
           <div className="absolute inset-0 flex items-center justify-center z-30 bg-black/60">
