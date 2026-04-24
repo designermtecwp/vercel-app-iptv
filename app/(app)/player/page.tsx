@@ -229,7 +229,25 @@ function PlayerContent() {
     // Filmes e séries (.mp4/.mkv) vão direto — proxy HLS não suporta vídeo progressivo
     const effectiveUrl = isLive ? `/api/stream?url=${encodeURIComponent(url)}` : url;
 
-    const tryPlay = () => video.play().then(() => { console.log('[PLAYER] playing OK'); setPlaying(true); }).catch((e) => { console.error('[PLAYER] play failed:', e); setStreamError('Erro ao reproduzir: ' + e.message); });
+    const tryPlay = () => {
+      video.muted = false;
+      const p = video.play();
+      if (p !== undefined) {
+        p.then(() => { console.log('[PLAYER] playing OK'); setPlaying(true); })
+        .catch(() => {
+          // Autoplay bloqueado — tentar com mute primeiro
+          video.muted = true;
+          video.play().then(() => {
+            setPlaying(true);
+            // Desmutar apos iniciar
+            setTimeout(() => { video.muted = false; }, 500);
+          }).catch((e2) => {
+            console.error('[PLAYER] play failed muted:', e2);
+            setStreamError('Clique em qualquer lugar para reproduzir');
+          });
+        });
+      }
+    };
 
     if (effectiveUrl.includes(".m3u8") || effectiveUrl.includes("/api/stream")) {
       try {
