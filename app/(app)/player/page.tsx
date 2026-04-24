@@ -82,9 +82,12 @@ function PlayerContent() {
   //   series → /series/user/pass/{ep_id}.mp4  (extensão do episódio; .mkv/.ts também comuns)
   // Pegamos ext do parâmetro opcional; default 'mp4' cobre 95% dos casos.
   const epExt = params.get("ext") || "mp4";
+  // Para canais ao vivo: usar http:// diretamente
+  // O HLS.js carrega segmentos http:// sem bloqueio quando o src inicial ja e http://
+  const liveDns = dns?.replace("https://", "http://") || "";
   const streamUrl = streamId && dns && username && password
     ? isLive
-      ? `${dns}/live/${username}/${password}/${streamId}.m3u8`
+      ? `${liveDns}/live/${username}/${password}/${streamId}.m3u8`
       : isSeries
         ? `${dns}/series/${username}/${password}/${streamId}.${epExt}`
         : `${dns}/movie/${username}/${password}/${streamId}.${epExt}`

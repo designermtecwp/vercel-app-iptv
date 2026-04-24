@@ -1,24 +1,21 @@
 ﻿with open("app/(app)/player/page.tsx", "r", encoding="utf-8") as f:
     c = f.read()
 
-# Sempre usar proxy para live — resolve Mixed Content independente do protocolo
+# Para live: usar http:// diretamente (servidor IPTV nao tem https nos segmentos)
+# O browser permite http em src de video quando iniciado por interacao do usuario
+old = "  const epExt = params.get(\"ext\") || \"mp4\";\n  const streamUrl = streamId && dns && username && password"
+new = """  const epExt = params.get("ext") || "mp4";
+  // Para canais ao vivo: usar http:// diretamente
+  // O HLS.js carrega segmentos http:// sem bloqueio quando o src inicial ja e http://
+  const liveDns = dns?.replace("https://", "http://") || "";
+  const streamUrl = streamId && dns && username && password"""
+
+c = c.replace(old, new)
+
+# Usar liveDns para live streams
 c = c.replace(
-    "    if (url.includes(\".m3u8\") || isLive) {",
-    """    // Live: sempre via proxy que reescreve segmentos http->https
-    const streamSrc = isLive ? `/api/stream?url=${encodeURIComponent(url)}` : url;
-    if (streamSrc.includes("/api/stream") || streamSrc.includes(".m3u8")) {"""
-)
-c = c.replace(
-    "          hls.loadSource(url);",
-    "          hls.loadSource(streamSrc);"
-)
-c = c.replace(
-    "              video.src = url;\n              tryPlay();",
-    "              video.src = streamSrc;\n              tryPlay();"
-)
-c = c.replace(
-    "      video.src = url;\n      tryPlay();\n    } else {\n      video.src = url;",
-    "      video.src = streamSrc;\n      tryPlay();\n    } else {\n      video.src = url;"
+    "? isLive\n      ? `${dns}/live/${username}/${password}/${streamId}.m3u8`",
+    "? isLive\n      ? `${liveDns}/live/${username}/${password}/${streamId}.m3u8`"
 )
 
 with open("app/(app)/player/page.tsx", "w", encoding="utf-8") as f:
