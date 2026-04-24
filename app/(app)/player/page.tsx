@@ -50,6 +50,7 @@ function PlayerContent() {
   const [savedTime, setSavedTime] = useState(0);
   const [vodItems, setVodItems] = useState<{stream_id:number;name:string;stream_icon:string;category_id:string}[]>([]);
   const [seriesEps, setSeriesEps] = useState<{id:number;title:string;episode_num:number;season:number}[]>([]);
+  const [streamError, setStreamError] = useState<string|null>(null);
   const hideTimer = useRef<number | null>(null);
   const countdownRef = useRef<number | null>(null);
 
