@@ -1,23 +1,21 @@
-﻿with open("app/(app)/player/page.tsx", "r", encoding="utf-8") as f:
+﻿import shutil, os
+src = r"C:\Users\luizd\Downloads\player_page.tsx"
+dst = r"app\(app)\player\page.tsx"
+if os.path.exists(src):
+    shutil.copy2(src, dst)
+    print("player copiado")
+else:
+    print("player nao encontrado, pulando")
+
+# Fix channels - remover proxyUrl
+with open(r"app\(app)\channels\page.tsx", "r", encoding="utf-8") as f:
     c = f.read()
-
-# Para live: usar http:// diretamente (servidor IPTV nao tem https nos segmentos)
-# O browser permite http em src de video quando iniciado por interacao do usuario
-old = "  const epExt = params.get(\"ext\") || \"mp4\";\n  const streamUrl = streamId && dns && username && password"
-new = """  const epExt = params.get("ext") || "mp4";
-  // Para canais ao vivo: usar http:// diretamente
-  // O HLS.js carrega segmentos http:// sem bloqueio quando o src inicial ja e http://
-  const liveDns = dns?.replace("https://", "http://") || "";
-  const streamUrl = streamId && dns && username && password"""
-
-c = c.replace(old, new)
-
-# Usar liveDns para live streams
-c = c.replace(
-    "? isLive\n      ? `${dns}/live/${username}/${password}/${streamId}.m3u8`",
-    "? isLive\n      ? `${liveDns}/live/${username}/${password}/${streamId}.m3u8`"
-)
-
-with open("app/(app)/player/page.tsx", "w", encoding="utf-8") as f:
+for old, new in [
+    ('function proxyUrl(url: string): string {\n  if (!url) return "";\n  if (url.startsWith("http://")) return `/api/img?url=${encodeURIComponent(url)}`;\n  return url;\n}\n', ''),
+    ('function proxyUrl(url: string): string {\n  if (!url) return url;\n  if (url.startsWith("http://")) return `/api/img?url=${encodeURIComponent(url)}`;\n  return url;\n}\n\n', ''),
+    ('src={proxyUrl(ch.stream_icon)}', 'src={ch.stream_icon}'),
+]:
+    c = c.replace(old, new)
+with open(r"app\(app)\channels\page.tsx", "w", encoding="utf-8") as f:
     f.write(c)
-print("OK")
+print("channels OK, proxyUrl:", "proxyUrl" in c)
