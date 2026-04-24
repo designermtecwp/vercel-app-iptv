@@ -231,7 +231,7 @@ function PlayerContent() {
 
     const tryPlay = () => video.play().then(() => setPlaying(true)).catch(() => {});
 
-    if (effectiveUrl.includes(".m3u8") || effectiveUrl.includes("/api/stream") || isLive) {
+    if (effectiveUrl.includes(".m3u8") || needsProxy) {
       try {
         const HlsMod = await import("hls.js");
         const Hls = HlsMod.default || HlsMod;
