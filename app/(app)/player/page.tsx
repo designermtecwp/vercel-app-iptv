@@ -50,7 +50,6 @@ function PlayerContent() {
   const [savedTime, setSavedTime] = useState(0);
   const [vodItems, setVodItems] = useState<{stream_id:number;name:string;stream_icon:string;category_id:string}[]>([]);
   const [seriesEps, setSeriesEps] = useState<{id:number;title:string;episode_num:number;season:number}[]>([]);
-  const [streamError, setStreamError] = useState<string|null>(null);
   const hideTimer = useRef<number | null>(null);
   const countdownRef = useRef<number | null>(null);
 
@@ -82,12 +81,9 @@ function PlayerContent() {
   //   series → /series/user/pass/{ep_id}.mp4  (extensão do episódio; .mkv/.ts também comuns)
   // Pegamos ext do parâmetro opcional; default 'mp4' cobre 95% dos casos.
   const epExt = params.get("ext") || "mp4";
-  // Para canais ao vivo: usar http:// diretamente
-  // O HLS.js carrega segmentos http:// sem bloqueio quando o src inicial ja e http://
-  const liveDns = dns?.replace("https://", "http://") || "";
   const streamUrl = streamId && dns && username && password
     ? isLive
-      ? `${liveDns}/live/${username}/${password}/${streamId}.m3u8`
+      ? `${dns}/live/${username}/${password}/${streamId}.m3u8`
       : isSeries
         ? `${dns}/series/${username}/${password}/${streamId}.${epExt}`
         : `${dns}/movie/${username}/${password}/${streamId}.${epExt}`
@@ -234,11 +230,7 @@ function PlayerContent() {
         .catch(() => {});
     };
 
-    // Para canais ao vivo: sempre passar pelo proxy que reescreve http->https nos segmentos
-    const liveUrl = isLive ? `/api/stream?url=${encodeURIComponent(url)}` : url;
-    const finalUrl = liveUrl;
-
-    if (finalUrl.includes(".m3u8") || finalUrl.includes("/api/stream")) {
+    if (url.includes(".m3u8") || isLive) {
       try {
         const HlsMod = await import("hls.js");
         const Hls = HlsMod.default || HlsMod;
@@ -257,7 +249,7 @@ function PlayerContent() {
             fragLoadingMaxRetry: 6,
             xhrSetup: (xhr: XMLHttpRequest) => { xhr.withCredentials = false; },
           });
-          hls.loadSource(finalUrl);
+          hls.loadSource(url);
           hls.attachMedia(video);
           hls.on(Hls.Events.MANIFEST_PARSED, () => tryPlay());
           hls.on(Hls.Events.ERROR, (_: unknown, d: {fatal?: boolean}) => {
@@ -267,10 +259,10 @@ function PlayerContent() {
           return;
         }
       } catch {}
-      video.src = finalUrl;
+      video.src = url;
       tryPlay();
     } else {
-      video.src = finalUrl;
+      video.src = url;
       tryPlay();
     }
   }, [isLive]);
@@ -520,7 +512,7 @@ function PlayerContent() {
           onPlay={()=>{setPlaying(true); if(hideTimer.current) window.clearTimeout(hideTimer.current); setShowControls(false); saveProgress();}} onPause={()=>{setPlaying(false); setShowControls(true);}}
           onLoadedMetadata={()=>checkSavedProgress()}
           onEnded={handleVideoEnded}
-          onClick={togglePlay} playsInline autoPlay muted/>
+          onClick={togglePlay} playsInline/>
 
         {/* Ícone pause no centro */}
         {!playing && !showContinue && (
