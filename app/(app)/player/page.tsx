@@ -223,9 +223,10 @@ function PlayerContent() {
     hlsRef.current?.destroy();
     hlsRef.current = null;
 
-    // Se o servidor IPTV usa http:// e o app está em https://, rota pelo proxy
-    // para evitar bloqueio de Mixed Content no browser
-    const effectiveUrl = url.startsWith("http://")
+    // Proxy apenas para canais ao vivo em http:// (evita Mixed Content)
+    // Filmes e séries (.mp4/.mkv) vão direto — proxy HLS não suporta vídeo progressivo
+    const needsProxy = isLive && url.startsWith("http://");
+    const effectiveUrl = needsProxy
       ? `/api/stream?url=${encodeURIComponent(url)}`
       : url;
 
