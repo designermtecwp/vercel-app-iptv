@@ -50,7 +50,6 @@ function PlayerContent() {
   const [savedTime, setSavedTime] = useState(0);
   const [vodItems, setVodItems] = useState<{stream_id:number;name:string;stream_icon:string;category_id:string}[]>([]);
   const [seriesEps, setSeriesEps] = useState<{id:number;title:string;episode_num:number;season:number}[]>([]);
-  const [streamError, setStreamError] = useState<string|null>(null);
   const hideTimer = useRef<number | null>(null);
   const countdownRef = useRef<number | null>(null);
 
@@ -64,7 +63,6 @@ function PlayerContent() {
   const seriesId = params.get("series_id");
   const nextEpId = params.get("next_ep_id");
   const nextEpTitle = params.get("next_ep_title");
-  const nextEpExt = params.get("next_ep_ext") || "mp4";
   const isLive = type === "live" && !!streamId;
   const isSeries = type === "series";
 
@@ -76,18 +74,10 @@ function PlayerContent() {
 
   const favId = `${type}-${streamId}`;
 
-  // URL do stream — cada tipo usa endpoint diferente no Xtream:
-  //   live   → /live/user/pass/{id}.m3u8
-  //   vod    → /movie/user/pass/{id}.mp4
-  //   series → /series/user/pass/{ep_id}.mp4  (extensão do episódio; .mkv/.ts também comuns)
-  // Pegamos ext do parâmetro opcional; default 'mp4' cobre 95% dos casos.
-  const epExt = params.get("ext") || "mp4";
   const streamUrl = streamId && dns && username && password
     ? isLive
-      ? `/api/proxy-stream?url=${encodeURIComponent(`${dns}/live/${username}/${password}/${streamId}.m3u8`)}`
-      : isSeries
-        ? `${dns}/series/${username}/${password}/${streamId}.${epExt}`
-        : `${dns}/movie/${username}/${password}/${streamId}.${epExt}`
+      ? `${dns}/live/${username}/${password}/${streamId}.m3u8`
+      : `${dns}/movie/${username}/${password}/${streamId}.mp4`
     : null;
 
   useEffect(() => {
@@ -224,14 +214,9 @@ function PlayerContent() {
     hlsRef.current?.destroy();
     hlsRef.current = null;
 
-    const tryPlay = () => {
-      video.muted = true;
-      video.play()
-        .then(() => { setPlaying(true); setTimeout(() => { video.muted = false; }, 300); })
-        .catch(() => {});
-    };
+    const tryPlay = () => video.play().then(() => setPlaying(true)).catch(() => {});
 
-    if (url.includes(".m3u8")) {
+    if (url.includes(".m3u8") || isLive) {
       try {
         const HlsMod = await import("hls.js");
         const Hls = HlsMod.default || HlsMod;
@@ -242,24 +227,33 @@ function PlayerContent() {
             liveMaxLatencyDurationCount: 10,
             maxBufferLength: 30,
             maxMaxBufferLength: 60,
-            manifestLoadingTimeOut: 20000,
-            manifestLoadingMaxRetry: 3,
-            levelLoadingTimeOut: 20000,
-            levelLoadingMaxRetry: 3,
+            manifestLoadingTimeOut: 15000,
+            manifestLoadingMaxRetry: 5,
+            levelLoadingTimeOut: 15000,
+            levelLoadingMaxRetry: 5,
             fragLoadingTimeOut: 30000,
-            fragLoadingMaxRetry: 6,
-            xhrSetup: (xhr: XMLHttpRequest) => { xhr.withCredentials = false; },
+            fragLoadingMaxRetry: 8,
+            xhrSetup: (xhr: XMLHttpRequest) => {
+              xhr.withCredentials = false;
+            },
           });
           hls.loadSource(url);
           hls.attachMedia(video);
           hls.on(Hls.Events.MANIFEST_PARSED, () => tryPlay());
-          hls.on(Hls.Events.ERROR, (_: unknown, d: {fatal?: boolean}) => {
-            if (d.fatal) { hls.destroy(); video.src = url; tryPlay(); }
+          hls.on(Hls.Events.ERROR, (_: unknown, d: {fatal?: boolean; type?: string}) => {
+            if (d.fatal) {
+              hls.destroy();
+              video.src = url;
+              tryPlay();
+            }
           });
           hlsRef.current = hls;
           return;
         }
-      } catch {}
+      } catch (e) {
+        console.warn("HLS.js failed, fallback to native", e);
+      }
+      // Fallback nativo (Safari / TV / alguns WebViews)
       video.src = url;
       tryPlay();
     } else {
@@ -289,7 +283,6 @@ function PlayerContent() {
             stream: nextEpId, dns: dns||"", username: username||"", password: password||"",
             name: nextEpTitle||"Episódio", type: "series",
             series_id: seriesId||"", series_name: params.get("series_name")||"",
-            ext: nextEpExt,
           });
           window.location.href = `/player?${nextUrl.toString()}`;
           return null;
@@ -306,7 +299,7 @@ function PlayerContent() {
 
   function switchChannel(ch: Channel) {
     if (!dns || !username || !password) return;
-    const newUrl = `${dns}/live/${username}/${password}/${ch.stream_id}.ts`;
+    const newUrl = `${dns}/live/${username}/${password}/${ch.stream_id}.m3u8`;
     const newParams = new URLSearchParams({ stream: String(ch.stream_id), dns, username, password, name: ch.name, type: "live", cat: guideFilter });
     window.history.replaceState({}, "", `/player?${newParams.toString()}`);
     loadStream(newUrl);
@@ -422,10 +415,14 @@ function PlayerContent() {
       if (m) { m.style.paddingBottom = ""; m.style.overflow = ""; }
     };
   }, []);
-  // Auto fullscreen removido — estava causando confusão no desktop
-  // (requestFullscreen precisa de interação do usuário em muitos browsers,
-  // e quando falha silenciosamente o player parece travado).
-  // O usuário clica no botão de fullscreen quando quiser.
+  // Auto fullscreen no desktop apenas para live e series
+  useEffect(() => {
+    const isMobile = /Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
+    if (!isMobile && (type === "live" || type === "series")) {
+      const timer = setTimeout(() => enterFullscreen(), 500);
+      return () => clearTimeout(timer);
+    }
+  }, []);
 
   useEffect(() => {
     function onFsChange() {
@@ -535,18 +532,6 @@ function PlayerContent() {
             </div>
           </div>
         )}
-        {/* Erro de stream */}
-        {streamError && (
-          <div style={{position:"absolute",inset:0,display:"flex",alignItems:"center",justifyContent:"center",flexDirection:"column",gap:"16px",zIndex:25,background:"rgba(0,0,0,0.75)"}}>
-            <svg viewBox="0 0 24 24" style={{width:"40px",height:"40px",color:"#ef4444"}} fill="none" stroke="currentColor" strokeWidth={1.5}><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
-            <p style={{color:"rgba(255,255,255,0.8)",fontSize:"14px",textAlign:"center",maxWidth:"280px",lineHeight:1.5}}>{streamError}</p>
-            <button onClick={()=>{setStreamError(null);if(streamUrl)loadStream(streamUrl);}}
-              style={{background:"#7c3aed",color:"#fff",border:"none",borderRadius:"8px",padding:"10px 24px",fontSize:"13px",fontWeight:600,cursor:"pointer"}}>
-              Tentar novamente
-            </button>
-          </div>
-        )}
-
         {/* Modal continuar assistindo */}
         {showContinue && !isLive && (
           <div className="absolute inset-0 flex items-center justify-center z-30 bg-black/60">
@@ -590,7 +575,7 @@ function PlayerContent() {
                 <span className="text-xs text-zinc-400 w-4">{countdown}s</span>
               </div>
               <div className="flex gap-2 mt-3">
-                <button onClick={()=>{ if(countdownRef.current) window.clearInterval(countdownRef.current); setCountdown(null); window.location.href = `/player?${new URLSearchParams({stream:nextEpId!,dns:dns||"",username:username||"",password:password||"",name:nextEpTitle||"",type:"series",series_id:seriesId||"",series_name:params.get("series_name")||"",ext:nextEpExt}).toString()}`; }}
+                <button onClick={()=>{ if(countdownRef.current) window.clearInterval(countdownRef.current); setCountdown(null); window.location.href = `/player?${new URLSearchParams({stream:nextEpId!,dns:dns||"",username:username||"",password:password||"",name:nextEpTitle||"",type:"series",series_id:seriesId||"",series_name:params.get("series_name")||""}).toString()}`; }}
                   className="flex-1 bg-violet-600 text-white text-xs font-medium py-2 rounded-lg hover:bg-violet-500 transition-colors">
                   Assistir agora
                 </button>
