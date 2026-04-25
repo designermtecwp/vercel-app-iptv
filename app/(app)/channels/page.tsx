@@ -117,15 +117,13 @@ export default function ChannelsPage() {
           {channels.length>0&&<span className="text-xs text-white/60 bg-white/10 px-2 py-0.5 rounded-full border border-white/20">{filtered.length}</span>}
         </div>
         <div className="flex items-center gap-2 flex-1 sm:flex-none">
-          <div className="relative">
-            <svg className="absolute left-2 top-1/2 -translate-y-1/2 w-3 h-3 sm:w-4 sm:h-4 text-zinc-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.8}><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg>
-            <input type="text" placeholder="Buscar canal..." value={search} onChange={e=>setSearch(e.target.value)}
-              className="bg-zinc-900 border border-zinc-800 text-sm text-white pl-9 pr-4 py-2 rounded-xl focus:outline-none focus:border-violet-500 placeholder-zinc-600 w-44"/>
+          <div className="relative flex-1 sm:flex-none">
+            <input type="text" placeholder="Buscar" value={search} onChange={e=>setSearch(e.target.value)}
+              className="w-full sm:w-44 bg-zinc-900 border border-zinc-800 text-sm text-white px-3 py-1.5 rounded-xl focus:outline-none focus:border-violet-500 placeholder-zinc-500"/>
           </div>
           <button onClick={()=>setShowCats(true)}
-            className={`flex items-center gap-2 text-sm px-4 py-2 rounded-xl border transition-all flex-shrink-0 ${showCats||active!=="all" ? "bg-violet-600 border-violet-600 text-white" : "bg-zinc-900 border-zinc-800 text-zinc-400 hover:text-white hover:border-zinc-600"}`}>
-            <svg viewBox="0 0 24 24" className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth={1.8}><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg>
-            <span className="max-w-24 truncate text-xs sm:text-sm">{active==="all"?"Categorias":activeCat?.category_name||"Cat."}</span>
+            className={`flex items-center justify-center p-1.5 rounded-xl border transition-all flex-shrink-0 ${showCats||active!=="all" ? "bg-violet-600 border-violet-600 text-white" : "bg-zinc-900 border-zinc-800 text-zinc-400 hover:text-white hover:border-zinc-600"}`}>
+            <svg viewBox="0 0 24 24" className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth={1.8}><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg>
           </button>
         </div>
       </div>

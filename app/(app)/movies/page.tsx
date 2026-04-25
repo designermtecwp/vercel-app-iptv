@@ -113,8 +113,8 @@ export default function MoviesPage() {
         <div className="flex items-center gap-2 flex-1 sm:flex-none">
           <div className="relative flex-1 sm:flex-none">
             <svg className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-zinc-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.8}><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg>
-            <input type="text" placeholder="Buscar..." value={search} onChange={e=>setSearch(e.target.value)}
-              className="w-full sm:w-44 bg-zinc-900 border border-zinc-800 text-sm text-white pl-8 pr-4 py-2 rounded-xl focus:outline-none focus:border-violet-500 placeholder-zinc-600"/>
+            <input type="text" placeholder="Buscar" value={search} onChange={e=>setSearch(e.target.value)}
+              className="w-full sm:w-44 bg-zinc-900 border border-zinc-800 text-sm text-white px-3 py-1.5 rounded-xl focus:outline-none focus:border-violet-500 placeholder-zinc-500"/>
           </div>
           <button onClick={()=>setShowCats(true)}
             className={`flex items-center gap-2 text-sm px-3 py-2 rounded-xl border transition-all whitespace-nowrap ${genre!=="all"?"bg-violet-600 border-violet-600 text-white":"bg-zinc-900 border-zinc-800 text-zinc-400 hover:text-white"}`}>
