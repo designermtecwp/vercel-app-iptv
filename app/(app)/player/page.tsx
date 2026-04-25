@@ -84,7 +84,7 @@ function PlayerContent() {
   const epExt = params.get("ext") || "mp4";
   const streamUrl = streamId && dns && username && password
     ? isLive
-      ? `${dns}/live/${username}/${password}/${streamId}.ts`
+      ? `/api/stream?url=${encodeURIComponent(`${dns}/live/${username}/${password}/${streamId}.m3u8`)}`
       : isSeries
         ? `${dns}/series/${username}/${password}/${streamId}.${epExt}`
         : `${dns}/movie/${username}/${password}/${streamId}.${epExt}`
