@@ -1,6 +1,6 @@
 ﻿content = """import { NextRequest, NextResponse } from "next/server";
 
-const REPLIT_PROXY = "https://iptv-manager--luizdori.replit.app/api/xtream/stream";
+const REPLIT = "https://iptv-manager--luizdori.replit.app";
 
 export async function GET(req: NextRequest) {
   const url = req.nextUrl.searchParams.get("url");
@@ -9,7 +9,12 @@ export async function GET(req: NextRequest) {
   const decoded = decodeURIComponent(url);
 
   try {
-    const res = await fetch(`${REPLIT_PROXY}?url=${encodeURIComponent(decoded)}`, {
+    // Se a URL ja e do Replit, busca direto
+    const fetchUrl = decoded.startsWith(REPLIT) 
+      ? decoded 
+      : `${REPLIT}/api/xtream/stream?url=${encodeURIComponent(decoded)}`;
+
+    const res = await fetch(fetchUrl, {
       headers: { "User-Agent": "Mozilla/5.0", "Accept": "*/*" },
     });
 
@@ -20,10 +25,13 @@ export async function GET(req: NextRequest) {
 
     if (isM3u8) {
       let text = await res.text();
+      // Reescrever URLs dos segmentos para passar pelo nosso proxy
       text = text.replace(/^(?!#)(.+)$/gm, (line) => {
         const t = line.trim();
         if (!t) return line;
-        return "/api/proxy-stream?url=" + encodeURIComponent(t);
+        // Se ja e URL do Replit (comeca com /api/xtream ou http do replit)
+        const full = t.startsWith("http") ? t : `${REPLIT}${t}`;
+        return "/api/proxy-stream?url=" + encodeURIComponent(full);
       });
       return new NextResponse(text, {
         headers: {
