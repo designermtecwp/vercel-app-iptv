@@ -8,10 +8,16 @@ export async function GET(req: NextRequest) {
   if (!url) return new NextResponse("url required", { status: 400 });
 
   const decoded = decodeURIComponent(url);
-  const fullUrl = decoded.startsWith("http") ? decoded : `${IPTV_BASE}${decoded}`;
 
   try {
-    const fetchUrl = `${REPLIT}/api/xtream/stream?url=${encodeURIComponent(fullUrl)}`;
+    let fetchUrl: string;
+    if (decoded.startsWith("/api/xtream")) {
+      fetchUrl = `${REPLIT}${decoded}`;
+    } else {
+      const fullUrl = decoded.startsWith("http") ? decoded : `${IPTV_BASE}${decoded}`;
+      fetchUrl = `${REPLIT}/api/xtream/stream?url=${encodeURIComponent(fullUrl)}`;
+    }
+
     const res = await fetch(fetchUrl, {
       headers: { "User-Agent": "Mozilla/5.0", "Accept": "*/*" },
     });
@@ -19,7 +25,7 @@ export async function GET(req: NextRequest) {
     if (!res.ok) return new NextResponse("upstream error", { status: res.status });
 
     const ct = res.headers.get("Content-Type") || "";
-    const isM3u8 = fullUrl.includes(".m3u8") || ct.includes("mpegurl");
+    const isM3u8 = decoded.includes(".m3u8") || ct.includes("mpegurl");
 
     if (isM3u8) {
       let text = await res.text();
