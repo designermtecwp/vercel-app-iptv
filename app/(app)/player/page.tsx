@@ -83,7 +83,7 @@ function PlayerContent() {
   const epExt = params.get("ext") || "mp4";
   const streamUrl = streamId && dns && username && password
     ? isLive
-      ? `${dns}/live/${username}/${password}/${streamId}.m3u8`
+      ? `${dns}/live/${username}/${password}/${streamId}.ts`
       : isSeries
         ? `${dns}/series/${username}/${password}/${streamId}.${epExt}`
         : `${dns}/movie/${username}/${password}/${streamId}.${epExt}`
@@ -230,7 +230,7 @@ function PlayerContent() {
         .catch(() => {});
     };
 
-    if (url.includes(".m3u8") || isLive) {
+    if (url.includes(".m3u8")) {
       try {
         const HlsMod = await import("hls.js");
         const Hls = HlsMod.default || HlsMod;
@@ -305,7 +305,7 @@ function PlayerContent() {
 
   function switchChannel(ch: Channel) {
     if (!dns || !username || !password) return;
-    const newUrl = `${dns}/live/${username}/${password}/${ch.stream_id}.m3u8`;
+    const newUrl = `${dns}/live/${username}/${password}/${ch.stream_id}.ts`;
     const newParams = new URLSearchParams({ stream: String(ch.stream_id), dns, username, password, name: ch.name, type: "live", cat: guideFilter });
     window.history.replaceState({}, "", `/player?${newParams.toString()}`);
     loadStream(newUrl);
