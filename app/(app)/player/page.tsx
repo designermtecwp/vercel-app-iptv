@@ -74,10 +74,13 @@ function PlayerContent() {
 
   const favId = `${type}-${streamId}`;
 
+  const epExt = params.get("ext") || "mp4";
   const streamUrl = streamId && dns && username && password
     ? isLive
-      ? `${dns}/live/${username}/${password}/${streamId}.m3u8`
-      : `${dns}/movie/${username}/${password}/${streamId}.mp4`
+      ? `/api/proxy-stream?url=${encodeURIComponent(`${dns}/live/${username}/${password}/${streamId}.m3u8`)}`
+      : isSeries
+        ? `${dns}/series/${username}/${password}/${streamId}.${epExt}`
+        : `${dns}/movie/${username}/${password}/${streamId}.${epExt}`
     : null;
 
   useEffect(() => {
