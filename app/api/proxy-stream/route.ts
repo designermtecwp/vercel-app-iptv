@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 
 const CF_WORKER = "https://iptv-proxy.luizdori.workers.dev";
+const IPTV_BASE = "http://cinesmarters.top";
 
 export async function GET(req: NextRequest) {
   const url = req.nextUrl.searchParams.get("url");
@@ -8,15 +9,18 @@ export async function GET(req: NextRequest) {
 
   const decoded = decodeURIComponent(url);
 
+  // Completar URL relativa com dominio do servidor IPTV
+  const fullUrl = decoded.startsWith("http") ? decoded : `${IPTV_BASE}${decoded}`;
+
   try {
-    const res = await fetch(`${CF_WORKER}?url=${encodeURIComponent(decoded)}`, {
+    const res = await fetch(`${CF_WORKER}?url=${encodeURIComponent(fullUrl)}`, {
       headers: { "User-Agent": "Mozilla/5.0", "Accept": "*/*" },
     });
 
     if (!res.ok) return new NextResponse("upstream error", { status: res.status });
 
     const ct = res.headers.get("Content-Type") || "";
-    const isM3u8 = decoded.includes(".m3u8") || ct.includes("mpegurl");
+    const isM3u8 = fullUrl.includes(".m3u8") || ct.includes("mpegurl");
 
     if (isM3u8) {
       let text = await res.text();
