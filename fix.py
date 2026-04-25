@@ -1,29 +1,34 @@
-﻿# Series - fix header
+﻿# Series
 with open("app/(app)/series/page.tsx", "r", encoding="utf-8") as f:
     c = f.read()
-c = c.replace(
-    '<div className="relative">\n            <svg className="absolute left-2 top-1/2 -translate-y-1/2 w-3 h-3 sm:w-4 sm:h-4 text-zinc-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.8}><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg>\n            <input type="text" placeholder="Buscar série..." value={search} onChange={e=>setSearch(e.target.value)}\n              className="bg-zinc-900 border border-zinc-800 text-sm text-white pl-9 pr-4 py-2 rounded-xl focus:outline-none focus:border-violet-500 placeholder-zinc-600 w-44"/>\n          </div>\n          <button onClick={()=>setShowCats(true)}\n            className={`flex items-center gap-3.5 text-sm px-4 py-2 rounded-xl border transition-all flex-shrink-0 ${showCats||genre!=="all" ? "bg-violet-600 border-violet-600 text-white" : "bg-zinc-900 border-zinc-800 text-zinc-400 hover:text-white hover:border-zinc-600"}`}>\n            <svg viewBox="0 0 24 24" className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth={1.8}><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg>\n            {genre==="all"?"Categorias":activeCat?.category_name||"Categoria"}\n          </button>',
-    '<div className="relative flex-1 sm:flex-none">\n            <input type="text" placeholder="Buscar" value={search} onChange={e=>setSearch(e.target.value)}\n              className="w-full sm:w-44 bg-zinc-900 border border-zinc-800 text-sm text-white px-3 py-1.5 rounded-xl focus:outline-none focus:border-violet-500 placeholder-zinc-500"/>\n          </div>\n          <button onClick={()=>setShowCats(true)}\n            className={`flex items-center justify-center p-1.5 rounded-xl border transition-all flex-shrink-0 ${showCats||genre!=="all" ? "bg-violet-600 border-violet-600 text-white" : "bg-zinc-900 border-zinc-800 text-zinc-400 hover:text-white hover:border-zinc-600"}`}>\n            <svg viewBox="0 0 24 24" className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth={1.8}><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg>\n          </button>'
-)
+old = '''          <button onClick={()=>setShowCats(true)}
+            className={`flex items-center justify-center p-1.5 rounded-xl border transition-all flex-shrink-0 ${showCats||genre!=="all" ? "bg-violet-600 border-violet-600 text-white" : "bg-zinc-900 border-zinc-800 text-zinc-400 hover:text-white hover:border-zinc-600"}`}>
+            <svg viewBox="0 0 24 24" className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth={1.8}><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg>
+          </button>'''
+new = '''          <button onClick={()=>setShowCats(true)}
+            className={`flex items-center justify-center p-1.5 rounded-xl border transition-all ${genre!=="all"?"bg-violet-600 border-violet-600 text-white":"bg-zinc-900 border-zinc-800 text-zinc-400 hover:text-white"}`}>
+            <svg viewBox="0 0 24 24" className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth={1.8}><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg>
+          </button>'''
+c = c.replace(old, new)
 with open("app/(app)/series/page.tsx", "w", encoding="utf-8") as f:
     f.write(c)
 
-# Channels - fix header
+# Channels header
 with open("app/(app)/channels/page.tsx", "r", encoding="utf-8") as f:
     c = f.read()
 c = c.replace(
-    '<div className="relative">\n            <svg className="absolute left-2 top-1/2 -translate-y-1/2 w-3 h-3 sm:w-4 sm:h-4 text-zinc-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.8}><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg>\n            <input type="text" placeholder="Buscar canal..." value={search} onChange={e=>setSearch(e.target.value)}\n              className="bg-zinc-900 border border-zinc-800 text-sm text-white pl-9 pr-4 py-2 rounded-xl focus:outline-none focus:border-violet-500 placeholder-zinc-600 w-44"/>\n          </div>\n          <button onClick={()=>setShowCats(true)}\n            className={`flex items-center gap-2 text-sm px-4 py-2 rounded-xl border transition-all flex-shrink-0 ${showCats||active!=="all" ? "bg-violet-600 border-violet-600 text-white" : "bg-zinc-900 border-zinc-800 text-zinc-400 hover:text-white hover:border-zinc-600"}`}>\n            <svg viewBox="0 0 24 24" className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth={1.8}><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg>\n            <span className="max-w-24 truncate text-xs sm:text-sm">{active==="all"?"Categorias":activeCat?.category_name||"Cat."}</span>\n          </button>',
-    '<div className="relative flex-1 sm:flex-none">\n            <input type="text" placeholder="Buscar" value={search} onChange={e=>setSearch(e.target.value)}\n              className="w-full sm:w-44 bg-zinc-900 border border-zinc-800 text-sm text-white px-3 py-1.5 rounded-xl focus:outline-none focus:border-violet-500 placeholder-zinc-500"/>\n          </div>\n          <button onClick={()=>setShowCats(true)}\n            className={`flex items-center justify-center p-1.5 rounded-xl border transition-all flex-shrink-0 ${showCats||active!=="all" ? "bg-violet-600 border-violet-600 text-white" : "bg-zinc-900 border-zinc-800 text-zinc-400 hover:text-white hover:border-zinc-600"}`}>\n            <svg viewBox="0 0 24 24" className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth={1.8}><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg>\n          </button>'
+    'className="flex items-center gap-2 px-4 pt-4 pb-3 sm:px-6 sm:pt-8 flex-shrink-0"',
+    'className="flex items-center justify-between px-4 pt-3 pb-2 sm:px-6 sm:pt-5 flex-shrink-0"'
+)
+c = c.replace(
+    'className="hidden sm:flex items-center gap-3 mr-auto"',
+    'className="hidden sm:flex items-center gap-3"'
+)
+c = c.replace(
+    'showCats||active!=="all" ? "bg-violet-600 border-violet-600 text-white" : "bg-zinc-900 border-zinc-800 text-zinc-400 hover:text-white hover:border-zinc-600"',
+    'active!=="all"?"bg-violet-600 border-violet-600 text-white":"bg-zinc-900 border-zinc-800 text-zinc-400 hover:text-white"'
 )
 with open("app/(app)/channels/page.tsx", "w", encoding="utf-8") as f:
-    f.write(c)
-
-# Movies - fix busca (remover icone, so texto Buscar)
-with open("app/(app)/movies/page.tsx", "r", encoding="utf-8") as f:
-    c = f.read()
-c = c.replace('placeholder="Buscar..."', 'placeholder="Buscar"')
-c = c.replace('className="w-full sm:w-44 bg-zinc-900 border border-zinc-800 text-sm text-white pl-8 pr-4 py-2 rounded-xl focus:outline-none focus:border-violet-500 placeholder-zinc-600"', 'className="w-full sm:w-44 bg-zinc-900 border border-zinc-800 text-sm text-white px-3 py-1.5 rounded-xl focus:outline-none focus:border-violet-500 placeholder-zinc-500"')
-with open("app/(app)/movies/page.tsx", "w", encoding="utf-8") as f:
     f.write(c)
 
 print("OK")

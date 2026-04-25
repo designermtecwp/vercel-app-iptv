@@ -111,8 +111,8 @@ export default function ChannelsPage() {
         />
       )}
 
-      <div className="flex items-center gap-2 px-4 pt-4 pb-3 sm:px-6 sm:pt-8 flex-shrink-0">
-        <div className="hidden sm:flex items-center gap-3 mr-auto">
+      <div className="flex items-center justify-between px-4 pt-3 pb-2 sm:px-6 sm:pt-5 flex-shrink-0">
+        <div className="hidden sm:flex items-center gap-3">
           <h1 className="text-xl font-semibold text-white">Canais ao vivo</h1>
           {channels.length>0&&<span className="text-xs text-white/60 bg-white/10 px-2 py-0.5 rounded-full border border-white/20">{filtered.length}</span>}
         </div>
@@ -122,7 +122,7 @@ export default function ChannelsPage() {
               className="w-full sm:w-44 bg-zinc-900 border border-zinc-800 text-sm text-white px-3 py-1.5 rounded-xl focus:outline-none focus:border-violet-500 placeholder-zinc-500"/>
           </div>
           <button onClick={()=>setShowCats(true)}
-            className={`flex items-center justify-center p-1.5 rounded-xl border transition-all flex-shrink-0 ${showCats||active!=="all" ? "bg-violet-600 border-violet-600 text-white" : "bg-zinc-900 border-zinc-800 text-zinc-400 hover:text-white hover:border-zinc-600"}`}>
+            className={`flex items-center justify-center p-1.5 rounded-xl border transition-all flex-shrink-0 ${active!=="all"?"bg-violet-600 border-violet-600 text-white":"bg-zinc-900 border-zinc-800 text-zinc-400 hover:text-white"}`}>
             <svg viewBox="0 0 24 24" className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth={1.8}><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg>
           </button>
         </div>
