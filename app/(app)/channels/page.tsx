@@ -1,6 +1,5 @@
 "use client";
 import { fetchXtream } from "@/lib/fetch-proxy";
-
 import { useState, useEffect, useRef } from "react";
 
 import { getSettings, isAdultCategory, sortItems } from "@/lib/settings";
@@ -112,7 +111,7 @@ export default function ChannelsPage() {
         />
       )}
 
-      <div className="flex items-center gap-2 px-4 pt-3 pb-2 sm:px-6 sm:pt-5 flex-shrink-0">
+      <div className="flex items-center gap-2 px-4 pt-4 pb-3 sm:px-6 sm:pt-8 flex-shrink-0">
         <div className="hidden sm:flex items-center gap-3 mr-auto">
           <h1 className="text-xl font-semibold text-white">Canais ao vivo</h1>
           {channels.length>0&&<span className="text-xs text-white/60 bg-white/10 px-2 py-0.5 rounded-full border border-white/20">{filtered.length}</span>}
@@ -131,15 +130,15 @@ export default function ChannelsPage() {
         </div>
       </div>
 
-      <div className="flex-1 overflow-y-auto px-4 sm:px-6 pb-6">
+      <div className="flex-1 overflow-y-auto px-6 pb-6">
         {loading ? (
-          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3 pt-2">
+          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3 p-1">
             {[...Array(10)].map((_,i)=><div key={i} className="bg-zinc-900 rounded-xl h-44 animate-pulse"/>)}
           </div>
         ) : filtered.length===0 ? (
           <div className="flex items-center justify-center h-full text-zinc-600"><p className="text-sm">Nenhum canal encontrado</p></div>
         ) : (
-          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 2xl:grid-cols-6 gap-3 pt-2">
+          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 2xl:grid-cols-6 gap-3 p-1">
             {filtered.map(ch=>{
               const cat = categories.find(c=>c.category_id===ch.category_id);
               const isAdult = isAdultCategory(cat?.category_name||"");
