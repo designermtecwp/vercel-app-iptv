@@ -1,6 +1,6 @@
 ﻿content = """import { NextRequest, NextResponse } from "next/server";
 
-const CF_WORKER = "https://iptv-proxy.luizdori.workers.dev";
+const REPLIT = "https://iptv-manager--luizdori.replit.app";
 const IPTV_BASE = "http://cinesmarters.top";
 
 export async function GET(req: NextRequest) {
@@ -8,12 +8,11 @@ export async function GET(req: NextRequest) {
   if (!url) return new NextResponse("url required", { status: 400 });
 
   const decoded = decodeURIComponent(url);
-
-  // Completar URL relativa com dominio do servidor IPTV
   const fullUrl = decoded.startsWith("http") ? decoded : `${IPTV_BASE}${decoded}`;
 
   try {
-    const res = await fetch(`${CF_WORKER}?url=${encodeURIComponent(fullUrl)}`, {
+    const fetchUrl = `${REPLIT}/api/xtream/stream?url=${encodeURIComponent(fullUrl)}`;
+    const res = await fetch(fetchUrl, {
       headers: { "User-Agent": "Mozilla/5.0", "Accept": "*/*" },
     });
 
