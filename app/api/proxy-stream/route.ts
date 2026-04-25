@@ -1,5 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 
+const REPLIT_PROXY = "https://iptv-manager--luizdori.replit.app/api/xtream/stream";
+
 export async function GET(req: NextRequest) {
   const url = req.nextUrl.searchParams.get("url");
   if (!url) return new NextResponse("url required", { status: 400 });
@@ -7,7 +9,7 @@ export async function GET(req: NextRequest) {
   const decoded = decodeURIComponent(url);
 
   try {
-    const res = await fetch(decoded, {
+    const res = await fetch(`${REPLIT_PROXY}?url=${encodeURIComponent(decoded)}`, {
       headers: { "User-Agent": "Mozilla/5.0", "Accept": "*/*" },
     });
 
@@ -18,23 +20,11 @@ export async function GET(req: NextRequest) {
 
     if (isM3u8) {
       let text = await res.text();
-      const base = decoded.substring(0, decoded.lastIndexOf("/") + 1);
-
       text = text.replace(/^(?!#)(.+)$/gm, (line) => {
         const t = line.trim();
         if (!t) return line;
-        let full: string;
-        if (t.startsWith("http://") || t.startsWith("https://")) {
-          full = t;
-        } else if (t.startsWith("/")) {
-          const u = new URL(decoded);
-          full = u.origin + t;
-        } else {
-          full = base + t;
-        }
-        return "/api/proxy-stream?url=" + encodeURIComponent(full);
+        return "/api/proxy-stream?url=" + encodeURIComponent(t);
       });
-
       return new NextResponse(text, {
         headers: {
           "Content-Type": "application/vnd.apple.mpegurl",
