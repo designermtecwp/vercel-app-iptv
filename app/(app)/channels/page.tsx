@@ -150,7 +150,7 @@ export default function ChannelsPage() {
                     {isLocked ? (
                       <svg viewBox="0 0 24 24" className="w-8 h-8 text-zinc-600" fill="none" stroke="currentColor" strokeWidth={1.5}><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0110 0v4"/></svg>
                     ) : ch.stream_icon ? (
-                      <img src={ch.stream_icon} alt={ch.name} className="w-20 h-14 object-contain"
+                      <img src={ch.stream_icon?.startsWith("http://") ? `https://iptv-proxy.luizdori.workers.dev?url=${encodeURIComponent(ch.stream_icon)}` : ch.stream_icon} alt={ch.name} className="w-20 h-14 object-contain"
                         onError={e=>{(e.target as HTMLImageElement).style.display="none"; (e.target as HTMLImageElement).parentElement!.innerHTML+='<span style="color:rgba(255,255,255,0.3);font-size:18px;font-weight:700">'+ch.name.slice(0,4).toUpperCase()+'</span>';}}/>
                     ) : (
                       <div className="flex items-center justify-center w-full h-full">

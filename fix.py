@@ -1,8 +1,8 @@
 ﻿with open("app/(app)/channels/page.tsx", "r", encoding="utf-8") as f:
     c = f.read()
 c = c.replace(
-    '<span className="hidden sm:inline max-w-[100px] truncate">{active==="all"?"Categorias":activeCat?.category_name||""}</span>',
-    '<span className="max-w-[100px] truncate">{active==="all"?"Categorias":activeCat?.category_name||""}</span>'
+    '<img src={ch.stream_icon}',
+    '<img src={ch.stream_icon?.startsWith("http://") ? `https://iptv-proxy.luizdori.workers.dev?url=${encodeURIComponent(ch.stream_icon)}` : ch.stream_icon}'
 )
 with open("app/(app)/channels/page.tsx", "w", encoding="utf-8") as f:
     f.write(c)
