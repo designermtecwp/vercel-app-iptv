@@ -1,8 +1,10 @@
-﻿import re
-for fname in ["app/(app)/movies/page.tsx", "app/(app)/series/page.tsx", "app/(app)/channels/page.tsx"]:
-    with open(fname, "r", encoding="utf-8") as f:
-        c = f.read()
-    c = re.sub(r'\s*<svg className="absolute[^"]*"[^>]*>.*?</svg>\n', '\n', c, flags=re.DOTALL)
-    with open(fname, "w", encoding="utf-8") as f:
-        f.write(c)
-    print(fname, "OK")
+﻿with open("app/(app)/channels/page.tsx", "r", encoding="utf-8") as f:
+    c = f.read()
+# Forca mudança minima para novo deploy
+c = c.replace(
+    'placeholder="Buscar" value={search} onChange={e=>setSearch(e.target.value)}',
+    'placeholder="Buscar..." value={search} onChange={e=>setSearch(e.target.value)}'
+)
+with open("app/(app)/channels/page.tsx", "w", encoding="utf-8") as f:
+    f.write(c)
+print("OK")

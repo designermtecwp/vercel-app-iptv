@@ -118,7 +118,7 @@ export default function ChannelsPage() {
         </div>
         <div className="flex items-center gap-2 flex-1 sm:flex-none">
           <div className="relative flex-1 sm:flex-none">
-            <input type="text" placeholder="Buscar" value={search} onChange={e=>setSearch(e.target.value)}
+            <input type="text" placeholder="Buscar..." value={search} onChange={e=>setSearch(e.target.value)}
               className="w-full sm:w-44 bg-zinc-900 border border-zinc-800 text-sm text-white px-3 py-1.5 rounded-xl focus:outline-none focus:border-violet-500 placeholder-zinc-500"/>
           </div>
           <button onClick={()=>setShowCats(true)}
