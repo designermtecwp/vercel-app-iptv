@@ -129,7 +129,7 @@ export default function ChannelsPage() {
         </div>
       </div>
 
-      <div className="flex-1 overflow-y-auto px-6 pb-6">
+      <div className="flex-1 overflow-y-auto px-4 sm:px-6 pb-6">
         {loading ? (
           <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3 p-1">
             {[...Array(10)].map((_,i)=><div key={i} className="bg-zinc-900 rounded-xl h-44 animate-pulse"/>)}
